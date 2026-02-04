@@ -3,50 +3,40 @@ import { useState } from "react";
 import { Button, Text, TextInput} from "react-native-paper";
 import { useRouter } from "expo-router";
 
-// documentation https://oss.callstack.com/react-native-paper/docs/components/TextInput
 
 export default function Login(){
-    const router = useRouter();
-    const [passwordHidden, setPasswordHidden] = useState(true);
-    const canGoBack = router.canGoBack?.() ?? true; // stack populated?
+// https://www.youtube.com/watch?v=V2YdhR1hVNw guide im following- Nathan Skinner
+// https://developers.google.com/identity/sign-in/web/sign-in
 
-    // later implement submitLogin() func probably below for validation/authentication
+function onSignIn(googleUser) {
+  var profile = googleUser.getBasicProfile();
+  console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
+  console.log('Name: ' + profile.getName());
+  console.log('Image URL: ' + profile.getImageUrl());
+  console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
+}
     return(
+      
         <View style={styles.container}>
-                  <Text style={{marginBottom: 20, fontSize: 25, fontWeight: 600}} variant="headlineSmall"> 
-                    Login 
-                    </Text>
+          
+            <>
+      <script
+        src="https://apis.google.com/js/platform.js"
+        async
+        defer
+      ></script>
 
-                  <TextInput
-                    label="Username"
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    style={styles.input}
-                    mode="outlined"
-                  />
+      <meta
+        name="google-signin-client_id"
+        content="307234319579-XXXX.apps.googleusercontent.com"
+      />
 
-                  {/* password hider logic. if hidden, blink, and on tap it change the bool*/}
-                  <TextInput
-                    label="Password"
-                    secureTextEntry={passwordHidden}
-                    style={styles.input}
-                    mode="outlined"
-                    right={
-                    <TextInput.Icon icon={passwordHidden ? "eye" : "off"}
-                    onPress={() => setPasswordHidden((x) => !x)}
-                    />
-                    }
-                  />
-
-                  <Button mode="contained"
-                  style={styles.button}
-                  >
-                    Login
-                  </Button>
-                  {canGoBack && 
-                  <Button mode="text" onPress={() => router.back()}>
-                    Return
-                  </Button>}
+      <div
+        className="g-signin2"
+        data-onsuccess="onSignIn"
+      ></div>
+    </>
+   
         </View>
     )
 }
