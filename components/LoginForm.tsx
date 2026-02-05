@@ -28,6 +28,7 @@ export default function LoginForm() {
           </View>
 
           <View style={styles.buttonContainer}>
+            <div class="g-signin2" data-onsuccess="onSignIn"></div>
             <SignInWithGoogleButton onPress={signIn} disabled={isLoading} />
             <SignInWithAppleButton />
           </View>
