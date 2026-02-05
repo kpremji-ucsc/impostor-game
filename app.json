@@ -1,8 +1,11 @@
 {
   "expo": {
     "name": "Imposter Game",
-    "slug": "Imposter Game",
-    "version": "1.0.0",
+    "slug": "imposter-game",
+    "extra": {
+      "googleWebClientId": "307234319579-o4anf7f1hbridc8vh4vtdcehmauhjv7o.apps.googleusercontent.com"
+    },
+
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",

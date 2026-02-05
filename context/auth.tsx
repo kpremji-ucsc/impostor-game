@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as WebBrowser from "expo-web-browser";
 import * as AppleAuthentication from "expo-apple-authentication";
-import { AuthUser } from "../utils/middleware";
+import { AuthUser } from "@/utils/middleware";
 import {
   AuthError,
   AuthRequestConfig,
@@ -10,30 +10,15 @@ import {
   makeRedirectUri,
   useAuthRequest,
 } from "expo-auth-session";
-import { tokenCache } from "../utils/cache";
+import { tokenCache } from "@/utils/cache";
 import { Platform } from "react-native";
-import { BASE_URL } from "../utils/constants";
+import { BASE_URL } from "@/utils/constants";
 import * as jose from "jose";
 import { randomUUID } from "expo-crypto";
-import Constants from "expo-constants";
+
 WebBrowser.maybeCompleteAuthSession();
 
-export type AuthUser = {
-    id:string;
-    email:string;
-    name:string;
-    picture?:string;
-    given_name?:string;
-    family_name?:string;
-    email_verified?:boolean;
-    provider?: string;
-    exp?:number;
-    cookieExpiration?: number; //for tracking expiration 
-}
-
-
 const AuthContext = React.createContext({
-
   user: null as AuthUser | null,
   signIn: () => {},
   signOut: () => {},
@@ -44,6 +29,7 @@ const AuthContext = React.createContext({
   isLoading: false,
   error: null as AuthError | null,
 });
+
 const config: AuthRequestConfig = {
   clientId: "google",
   scopes: ["openid", "profile", "email"],
@@ -659,6 +645,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     </AuthContext.Provider>
   );
 };
+
 export const useAuth = () => {
   const context = React.useContext(AuthContext);
   if (!context) {
