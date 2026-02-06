@@ -13,7 +13,7 @@ export default function Index() {
         Login
       </Button>
 
-      <Button mode="contained" onPress={() => router.push("/home")}>
+      <Button mode="contained" onPress={() => router.push("/join")}>
         Guest
       </Button>
 
