@@ -9,14 +9,22 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@react-oauth/google": "^0.13.4",
+    "base-64": "^1.0.0",
     "expo": "~54.0.31",
+    "expo-jwt": "^1.8.2",
     "expo-router": "~6.0.22",
     "expo-status-bar": "~3.0.9",
+    "jwt-decode": "^4.0.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-native": "0.81.5",
     "react-native-paper": "^5.14.5",
     "react-native-web": "^0.21.0"
   },
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "@types/react": "~19.1.10",
+    "typescript": "~5.9.2"
+  }
 }
