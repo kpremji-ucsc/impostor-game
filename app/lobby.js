@@ -9,9 +9,9 @@ export default function Lobby() {
     const router = useRouter();
     const { code } = useLocalSearchParams();
     const [players, setPlayers]  = useState([
-        { id: '1', name: 'Alice', isHost: true },
-        { id: '2', name: 'Bob', isHost: false },
-        { id: '3', name: 'Charlie', isHost: false },
+        { id: '1', name: 'Annie', isHost: true },
+        { id: '2', name: 'Briar', isHost: false },
+        { id: '3', name: 'Caitlyn', isHost: false },
     ]);
     
     return (
