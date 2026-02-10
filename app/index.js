@@ -17,6 +17,10 @@ export default function Index() {
         Guest
       </Button>
 
+      <Button mode="testLobby" onPress={() => router.push("/testLobby")}>
+        testLobby
+      </Button>
+
     </View>
   );
 }
