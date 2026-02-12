@@ -9,8 +9,7 @@ export default function LobbyPlayers({ players }) {
       renderItem={({ item }) => (
         <View style={styles.row}>
           <Text style={styles.name}>
-            {item.name}
-            {item.isHost && " (Host)"}
+            {item.name} {item.isHost && " (Host)"} {item.isReady && "READY"}
           </Text>
         </View>
       )}

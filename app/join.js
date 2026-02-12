@@ -1,24 +1,32 @@
 import { StyleSheet, View } from 'react-native';
-import {Button, Text, Snackbar} from "react-native-paper";
-import { TextInput } from 'react-native-paper';
-import {useRouter} from "expo-router";
+import { Button, Text, TextInput, Snackbar } from "react-native-paper";
+import { useRouter } from "expo-router";
 import { useState } from "react";
+import { JoinRoom } from '../lobbyActions';
+
 export default function FindLobby() {
     const router = useRouter();
     const [code, setCode] = useState("");
     const [noLobbyFoundAlert, setNoLobbyFoundAlert] = useState(false);
-    const handleJoin = async () => {
-    const lobbyExists = await checkLobbyExists(code);
 
-    if (!lobbyExists) {
-        setNoLobbyFoundAlert(true);
-        return;
-    }
-
-    router.push({
-        pathname: "/lobby",
-        params: { code },
-    });
+    const join = async () => {
+      try{
+        const { roomCode, newPlayerId, isHost } = await JoinRoom(
+          code, 
+          "Player" + Math.random().toString(20).substring(2,6).toUpperCase()
+        );
+        router.push({
+            pathname: "/lobby",
+            params: {
+            roomCode: roomCode, 
+            playerId: newPlayerId,
+            isHost: isHost
+          },
+        });
+      } catch (e) {
+          setNoLobbyFoundAlert(true);
+          console.error(e);
+      }
     };
 
     return (
@@ -37,12 +45,15 @@ export default function FindLobby() {
         keyboardType="number-pad"
       />
 
-      <Button mode="contained" onPress={handleJoin}>
+      <Button mode="contained" onPress={join}>
         Join
       </Button>
-
-      <Button mode="contained" onPress={() => router.push("/create")}>
-        Create Lobby
+      
+      <Button
+        mode="contained" 
+        onPress={() => {router.replace("/")}}
+      >
+        Return
       </Button>
 
       <Snackbar
@@ -59,12 +70,6 @@ export default function FindLobby() {
     </View>
   );
 }
-
-// replace with backend implmementation later
-const checkLobbyExists = async (code) => {
-  const validLobbies = ["123456", "000000", "999999"];
-  return validLobbies.includes(code);
-};
 
 const styles = StyleSheet.create({
   container: {

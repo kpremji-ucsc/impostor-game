@@ -1,17 +1,17 @@
-import {ref, set, get, update} from "firebase/database";
-import {db} from "./firebaseConfig";
+import { ref, set, remove, update, runTransaction } from "firebase/database";
+import { db } from "./firebaseConfig";
 
 
-// firebase RTDB will handle lobby logic.
-export const CreateRoom = async (playerName) => {
+export const CreateRoom = async (playerName, numPlayers, numImposters) => {
     const roomCode = Math.random().toString(20).substring(2,6).toUpperCase();
     const roomRef = ref(db, `rooms/${roomCode}`);
-
     const hostId = Date.now().toString();
 
     try{
         await set(roomRef, {
             roomCode: roomCode,
+            numImposters: numImposters,
+            numPlayers: numPlayers,
             status: "waiting",
             createdAt: Date.now(),
             hostId: hostId,
@@ -19,25 +19,65 @@ export const CreateRoom = async (playerName) => {
                 [hostId]: {name: playerName, isReady: true, isHost: true}
             }
         });
-        return ({roomCode, hostId});
+        return ({roomCode, hostId, isHost: true});
     } 
-    catch(error){ 
-        console.error("Creation failed with error: ", error);
-        throw error;
+    catch(e){ 
+        console.error("Creation failed with error: ", e);
+        throw e;
     }
 }
+
 export const JoinRoom = async (roomCode, playerName) => {
     const roomRef = ref(db, `rooms/${roomCode}`);
-
+    const newPlayerId = Date.now().toString();
     try{
-        const checkRoom = await get(roomRef);
+            const status = await runTransaction(roomRef, (room) => {
+            // check if room exists, then check
+            if (room === null ) {return room;}
 
-        if (checkRoom.exists()){
-            await update(ref(db, `rooms/${roomCode}/players`), {[Date.now()]: {name: playerName, isReady: false}});
-            console.log("Room join successful.");
-        } else {alert("Room not found!");}
-    }
-    catch(error){
-        console.error(" Join failed with error: ", error)
+            if (room.status !== "waiting") {return;}
+
+            const MAX_PLAYERS = room.numPlayers;
+            const currentPlayers = room.players ? Object.keys(room.players) : [];
+            if (currentPlayers.length >= MAX_PLAYERS) {return;}
+
+            room.players[newPlayerId] = {
+                name: playerName,
+                isReady: false,
+                isHost: false,
+            };
+            return room;
+        });
+
+        if (!status.committed) {throw new Error("Lobby not found, or is full!"); }
+        return ({roomCode, newPlayerId, isHost: false});
+    } catch(e) {
+        console.error(" Join failed with error: ", e);
+        throw e;
     }
 };
+
+export const ReadyUp = async (roomCode, playerId, currentReadyStatus) => {
+
+    try{
+        const playerRef = ref(db, `rooms/${roomCode}/players/${playerId}`);
+        await update(playerRef, {isReady: !currentReadyStatus});
+    } catch(e) {
+        console.error("Failed to update ready status!: ", e)
+    }
+}
+
+export const LeaveRoom = async(roomCode, playerId, isHost) =>{
+    try{
+        if (isHost){
+            const roomRef = ref(db, `rooms/${roomCode}`);
+            await remove(roomRef);
+        }
+        const player = ref(db, `rooms/${roomCode}/players/${playerId}`);
+        await remove(player);
+        return true;
+    } catch(e) {
+        console.error("Failed to leave: ", e);
+        throw e;
+    }
+}
