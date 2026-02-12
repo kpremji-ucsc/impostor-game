@@ -1,7 +1,9 @@
 import { View, StyleSheet, FlatList } from "react-native";
-import { Text, Avatar } from "react-native-paper";
+import { Text, Button } from "react-native-paper";
 
-export default function LobbyPlayers({ players }) {
+
+// kick function is defined in lobby.js to keep the design of this component purely UI, not having to touch DB 
+export default function LobbyPlayers({ players, isHost, kick}) {
   return (
     <FlatList
       data={players}
@@ -10,6 +12,16 @@ export default function LobbyPlayers({ players }) {
         <View style={styles.row}>
           <Text style={styles.name}>
             {item.name} {item.isHost && " (Host)"} {item.isReady && "READY"}
+            {isHost && !item.isHost && (
+              <Button
+                mode="outlined"
+                compact
+                textColor="red"
+                onPress ={() => kick(item.id)}
+              >
+                Kick
+              </Button>
+            )}
           </Text>
         </View>
       )}

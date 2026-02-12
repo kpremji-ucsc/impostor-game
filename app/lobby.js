@@ -11,6 +11,7 @@ export default function Lobby() {
     const router = useRouter();
     const { roomCode, playerId, isHost} = useLocalSearchParams();
     const [players, setPlayers]  = useState(null);
+    const [hasJoined, setHasJoined] = useState(false);
     const checkHost = isHost === 'true';
     const myReady = players ? players.find(p => p.id === playerId): null;
     const isReady = myReady ? myReady.isReady : false;
@@ -41,13 +42,20 @@ export default function Lobby() {
           }
         const freshPlayers = snapshot.val();
         if (freshPlayers) {
-          const playerNames = Object.entries(freshPlayers.players).map(([id, data]) => ({
+          const playersArray= Object.entries(freshPlayers.players).map(([id, data]) => ({
             id: id,
             name: data.name,
             isHost: data.isHost,
             isReady: data.isReady,
         }));
-          setPlayers(playerNames);
+        const isPresent = playersArray.some((player) => player.id === playerId);
+        if (!isPresent && !checkHost) {
+          Alert.alert('Kicked', 'You have been kicked from the lobby! ');
+          router.replace('/');
+          return;
+          }
+          setPlayers(playersArray);
+
         }
       })
 
@@ -102,44 +110,52 @@ export default function Lobby() {
       }
     }
     
-
+    const kick = (targetId) => {
+      LeaveRoom(roomCode, targetId, false).catch((e) => {
+        console.log("Kicking player failed: ", e.message);
+      })
+    }
 
     return (
     <View style={styles.container}>
-        <Text style={{marginBottom: 20, fontSize: 28, fontWeight: 600}} variant="headlineMedium"> Join with Game PIN: {roomCode} </Text>
-        <LobbyPlayers players={players} />
+        <Text style={styles.title} variant="headlineMedium"> Join with Game PIN: {roomCode} </Text>
+        <LobbyPlayers players={players} isHost={checkHost} kick={kick} />
 
-        {checkHost ? 
-        (<Button mode="contained" 
-        style={styles.button} 
-        onPress={() => router.push("/home")}>
+        {checkHost ? (
+          <Button 
+            mode="contained" 
+            style={styles.button} 
+            onPress={() => router.push("/home")}
+          >
             Start Game
-        </Button>)
-        :
-        (<Button mode="contained" 
-        style={styles.button} 
-        onPress={() => {ReadyUp(roomCode, playerId, isReady)}}>
+          </Button>
+          ) : (
+          <Button 
+            mode="contained" 
+            style={styles.button} 
+            onPress={() => {ReadyUp(roomCode, playerId, isReady)}}
+          >
             {isReady ? "Unready" : "Ready Up"}
-        </Button>)
+          </Button> )
         }
 
-        {checkHost ?
-        (<Button mode="outlined"
-        onPress={leave}
-        style={styles.button}
-        > 
-          Close Lobby 
-        </Button>)
-        :
-        (<Button mode="outlined"
-        onPress={leave}
-        style={styles.button}
-        > 
-          Leave Lobby 
-        </Button>)
+        {checkHost ? ( 
+          <Button 
+            mode="outlined"
+            onPress={leave}
+            style={styles.button}
+          > 
+            Close Lobby 
+          </Button> 
+          ) : (
+          <Button 
+            mode="outlined"
+            onPress={leave}
+            style={styles.button}
+          > 
+            Leave Lobby 
+          </Button> )
         }
-
-
     </View>
     );
 }
@@ -152,5 +168,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#fff',
   },
-  button: {borderRadius: 5}
+  button: {borderRadius: 5},
+  title: {
+    marginBottom: 20, 
+    fontSize: 28, 
+    fontWeight: 600
+  }
 });

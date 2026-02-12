@@ -65,7 +65,7 @@ export default function FindLobby() {
           onPress: () => setNoLobbyFoundAlert(false),
         }}
       >
-        Lobby not found. Check the PIN and try again.
+        Lobby not found or is full. Check the PIN and try again.
       </Snackbar>
     </View>
   );
