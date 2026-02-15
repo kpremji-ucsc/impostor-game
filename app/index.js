@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
-import {Button, Text} from "react-native-paper";
-import {useRouter} from "expo-router";
+import { Button, Text } from "react-native-paper";
+import { useRouter } from "expo-router";
 
 export default function Index() {
   const router = useRouter();
@@ -8,13 +8,32 @@ export default function Index() {
 
   return (
     <View style={styles.container}>
-      <Text style={{marginBottom: 20, fontSize: 30, fontWeight: 600}} variant="headlineMedium"> Imposter Game </Text>
-      <Button mode="contained" onPress={() => router.push("/login")}>
+      <Text 
+        style={styles.title} 
+        variant="headlineMedium"
+        > 
+        Imposter Game 
+      </Text>
+
+      <Button 
+        mode="contained" 
+        onPress={() => router.push("/login")}
+        >
         Login
       </Button>
 
-      <Button mode="contained" onPress={() => router.push("/join")}>
+      <Button 
+        mode="contained" 
+        onPress={() => router.push("/join")}
+        >
         Guest
+      </Button>
+
+      <Button 
+        mode="contained" 
+        onPress={() => router.push("/create")}
+        >
+        Test Lobby
       </Button>
 
     </View>
@@ -30,5 +49,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  button: {borderRadius: 5}
+  button: {borderRadius: 5},
+  title: {
+    marginBottom: 20, 
+    fontSize: 30, 
+    fontWeight: 600
+  },
 });
