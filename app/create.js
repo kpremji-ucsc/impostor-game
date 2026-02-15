@@ -2,7 +2,7 @@ import { StyleSheet, View } from 'react-native';
 import { Button, Text, TextInput, Snackbar } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { CreateRoom } from "../lobbyActions.js";
+import { CreateRoom } from "../dbActions.js";
 
 export default function CreateLobby() {
   const router = useRouter();
@@ -22,7 +22,7 @@ export default function CreateLobby() {
           );
           
           router.push({
-              pathname: "/lobby", 
+              pathname: "/lobbyUI", 
               params: {
               roomCode: roomCode, 
               playerId: hostId,

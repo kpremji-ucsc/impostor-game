@@ -2,7 +2,7 @@ import { StyleSheet, View } from 'react-native';
 import { Button, Text, TextInput, Snackbar } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { JoinRoom } from '../lobbyActions';
+import { JoinRoom } from '../dbActions';
 
 export default function FindLobby() {
     const router = useRouter();
@@ -16,7 +16,7 @@ export default function FindLobby() {
           "Player" + Math.random().toString(20).substring(2,6).toUpperCase()
         );
         router.push({
-            pathname: "/lobby",
+            pathname: "/lobbyUI",
             params: {
             roomCode: roomCode, 
             playerId: newPlayerId,

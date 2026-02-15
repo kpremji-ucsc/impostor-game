@@ -1,21 +1,14 @@
-import { StyleSheet, Platform, Alert, View } from 'react-native';
-import { Button, Text } from "react-native-paper";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import { useState, useEffect } from "react";
+import { ReadyUp, LeaveRoom } from '../dbActions.js';
+import { Platform, Alert } from 'react-native';
+import { useEffect } from 'react';
 import { ref, onValue, onDisconnect } from 'firebase/database';
 import { db } from '../firebaseConfig.js';
-import { ReadyUp, LeaveRoom } from '../lobbyActions.js'
-import LobbyPlayers from './components/lobbyPlayers';
 
-export default function Lobby() {
-    const router = useRouter();
-    const { roomCode, playerId, isHost} = useLocalSearchParams();
-    const [players, setPlayers]  = useState(null);
-    const [hasJoined, setHasJoined] = useState(false);
-    const checkHost = isHost === 'true';
-    const myReady = players ? players.find(p => p.id === playerId): null;
-    const isReady = myReady ? myReady.isReady : false;
+// db-touching functions separated from original lobby.js file to keep it as pure as possible
 
+
+// useEffect wrapper, custom hooks must start with use as per react rules of hooks
+export function useLobbySync(roomCode, playerId, checkHost, router, setPlayers) {
     // useEffect() is a react function that is used with listeners to interact
     // with external components (i.e, listening to a DB), and returns a cleanup
     // function to kill the listener when done
@@ -55,15 +48,28 @@ export default function Lobby() {
           return;
           }
           setPlayers(playersArray);
-
         }
-      })
+      });
 
       return() => killListener(); // cleanup function as per useEffect()
-    }, [roomCode]);
+    }, [roomCode, playerId, checkHost, router, setPlayers]);
+}
 
-    // leave function. pass true to LeaveRoom ifHost to delete room, false if not, then reroute user
-    const leave = async() => {
+// ReadyUp wrapper
+export const ready = (checkHost, roomCode, playerId) => {
+    ReadyUp(checkHost, roomCode, playerId).catch((e) => {
+        console.log("Ready up failed: ", e.message)
+    });
+}
+// LeaveRoom wrapper
+export const kick = (roomCode, targetId) => {
+      LeaveRoom(roomCode, targetId, false).catch((e) => {
+        console.log("Kicking player failed: ", e.message);
+      });
+}
+
+// leave function. pass true to LeaveRoom ifHost to delete room, false if not, then reroute user
+export const leave = async(checkHost, roomCode, playerId, router) => {
       try{
         if (checkHost){
           // for testing purposes on web, Alert.alert() in the else block is only for mobile devices so it wont display anything
@@ -109,69 +115,3 @@ export default function Lobby() {
         console.log("Lobby leave failed, please try again.")
       }
     }
-    
-    const kick = (targetId) => {
-      LeaveRoom(roomCode, targetId, false).catch((e) => {
-        console.log("Kicking player failed: ", e.message);
-      })
-    }
-
-    return (
-    <View style={styles.container}>
-        <Text style={styles.title} variant="headlineMedium"> Join with Game PIN: {roomCode} </Text>
-        <LobbyPlayers players={players} isHost={checkHost} kick={kick} />
-
-        {checkHost ? (
-          <Button 
-            mode="contained" 
-            style={styles.button} 
-            onPress={() => router.push("/home")}
-          >
-            Start Game
-          </Button>
-          ) : (
-          <Button 
-            mode="contained" 
-            style={styles.button} 
-            onPress={() => {ReadyUp(roomCode, playerId, isReady)}}
-          >
-            {isReady ? "Unready" : "Ready Up"}
-          </Button> )
-        }
-
-        {checkHost ? ( 
-          <Button 
-            mode="outlined"
-            onPress={leave}
-            style={styles.button}
-          > 
-            Close Lobby 
-          </Button> 
-          ) : (
-          <Button 
-            mode="outlined"
-            onPress={leave}
-            style={styles.button}
-          > 
-            Leave Lobby 
-          </Button> )
-        }
-    </View>
-    );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    gap: 20,
-    alignItems: 'center',
-    backgroundColor: '#fff',
-  },
-  button: {borderRadius: 5},
-  title: {
-    marginBottom: 20, 
-    fontSize: 28, 
-    fontWeight: 600
-  }
-});
