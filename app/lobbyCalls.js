@@ -1,4 +1,4 @@
-import { ReadyUp, LeaveRoom } from '../dbActions.js';
+import { ReadyUp, LeaveRoom, CreateRoom } from '../dbActions.js';
 import { Platform, Alert } from 'react-native';
 import { useEffect } from 'react';
 import { ref, onValue, onDisconnect } from 'firebase/database';
@@ -55,26 +55,35 @@ export function useLobbySync(roomCode, playerId, checkHost, router, setPlayers) 
     }, [roomCode, playerId, checkHost, router, setPlayers]);
 }
 
-// ReadyUp wrapper
-export const ready = (checkHost, roomCode, playerId) => {
-    ReadyUp(checkHost, roomCode, playerId).catch((e) => {
-        console.log("Ready up failed: ", e.message)
-    });
+// ReadyUp wrapper, abstracting the catch blocks and error catching
+export const ready = async(checkHost, roomCode, playerId) => {
+  try { 
+        await ReadyUp(checkHost, roomCode, playerId); 
+  } 
+  catch(e) {
+        console.log("Ready up failed: ", e.message);
+        throw e;
+    }
 }
-// LeaveRoom wrapper
-export const kick = (roomCode, targetId) => {
-      LeaveRoom(roomCode, targetId, false).catch((e) => {
+// LeaveRoom wrapper, abstracting the catch blocks and error catching
+export const kick = async(roomCode, targetId) => {
+  try{
+        await LeaveRoom(roomCode, targetId, false);
+  }
+  catch(e) {
         console.log("Kicking player failed: ", e.message);
-      });
+        throw e;
+  }
 }
 
 // leave function. pass true to LeaveRoom ifHost to delete room, false if not, then reroute user
+// normally dont want to tangle the UI logic or flow with db calls but.. better to keep this atomic than struggle with timing
 export const leave = async(checkHost, roomCode, playerId, router) => {
       try{
         if (checkHost){
           // for testing purposes on web, Alert.alert() in the else block is only for mobile devices so it wont display anything
           if (Platform.OS === 'web'){
-            const confirmed = window.confirm("Will delete, r u sure?");
+            const confirmed = window.confirm("This will delete the lobby for everybody. Are you sure?");
             if (confirmed){
               await LeaveRoom(roomCode, playerId, true);
               router.replace("/");
@@ -115,3 +124,21 @@ export const leave = async(checkHost, roomCode, playerId, router) => {
         console.log("Lobby leave failed, please try again.")
       }
     }
+
+export const createCall = async (lobbySize, impostors) => {
+      try {
+          // later change when we have SQLite to handle display name and persist locally
+          const username = "Player" + Math.random().toString(20).substring(2,6).toUpperCase();
+
+          const { roomCode, hostId, isHost } = await CreateRoom(
+            username, 
+            parseInt(lobbySize), 
+            parseInt(impostors)
+          );
+          return { roomCode, hostId, isHost }
+          }
+      catch (e) {
+            console.error(e);
+            throw e;
+        }
+  };

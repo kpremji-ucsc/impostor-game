@@ -32,7 +32,7 @@ export const JoinRoom = async (roomCode, playerName) => {
     const newPlayerId = Date.now().toString();
     try{
             const status = await runTransaction(roomRef, (room) => {
-            // check if room exists, then check
+            // check if room exists, then check room status
             if (room === null ) {return room;}
 
             if (room.status !== "waiting") {return;}
@@ -58,7 +58,6 @@ export const JoinRoom = async (roomCode, playerName) => {
 };
 
 export const ReadyUp = async (roomCode, playerId, currentReadyStatus) => {
-
     try{
         const playerRef = ref(db, `rooms/${roomCode}/players/${playerId}`);
         await update(playerRef, {isReady: !currentReadyStatus});

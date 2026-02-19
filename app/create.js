@@ -1,8 +1,9 @@
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import { Button, Text, TextInput, Snackbar } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { CreateRoom } from "../dbActions.js";
+import { styles } from '../styles/Styles.js';
+import { createCall } from './lobbyCalls.js';
 
 export default function CreateLobby() {
   const router = useRouter();
@@ -10,17 +11,9 @@ export default function CreateLobby() {
   const [impostors, setImpostors] = useState("1");
   const [noLobbyCreatedAlert, setNoLobbyCreatedAlert] = useState(false);
 
-  const create = async () => {
+  const create = async (router, lobbySize, impostors) => {
       try {
-          // later change when we have SQLite to handle display name and persist locally
-          const username = "Player" + Math.random().toString(20).substring(2,6).toUpperCase();
-
-          const { roomCode, hostId, isHost } = await CreateRoom(
-            username, 
-            parseInt(lobbySize), 
-            parseInt(impostors)
-          );
-          
+        const { roomCode, hostId, isHost } = await createCall(lobbySize, impostors);
           router.push({
               pathname: "/lobbyUI", 
               params: {
@@ -75,6 +68,7 @@ export default function CreateLobby() {
 
         <Button
           disabled={isInvalid}
+          style={styles.button} 
           mode="contained" 
           onPress={create}
         >
@@ -83,6 +77,7 @@ export default function CreateLobby() {
 
         <Button
           mode="contained" 
+          style={styles.button} 
           onPress={() => {router.replace("/")}}
         >
           Return
@@ -103,19 +98,3 @@ export default function CreateLobby() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    gap: 12,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  button: {borderRadius: 5},
-  title: {
-    marginBottom: 20, 
-    fontSize: 30, 
-    fontWeight: 600
-  },
-});

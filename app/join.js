@@ -1,8 +1,9 @@
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import { Button, Text, TextInput, Snackbar } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { JoinRoom } from '../dbActions';
+import { styles } from '../styles/Styles.js';
 
 export default function FindLobby() {
     const router = useRouter();
@@ -70,15 +71,3 @@ export default function FindLobby() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    gap: 12,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  button: {borderRadius: 5}
-});
