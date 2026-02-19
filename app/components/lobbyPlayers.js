@@ -1,5 +1,6 @@
-import { View, StyleSheet, FlatList } from "react-native";
+import { View, FlatList } from "react-native";
 import { Text, Button } from "react-native-paper";
+import { styles } from "../../styles/Styles.js";
 
 
 // kick function is defined in lobbyCalls.js to keep the design purely UI, not having to touch DB 
@@ -17,6 +18,7 @@ export default function LobbyPlayers({ players, isHost, kickCall}) {
           {isHost && !item.isHost && (
             <Button
               mode="outlined"
+              style={styles.button} 
               compact
               textColor="red"
               onPress ={() => kickCall(item.id)}
@@ -29,15 +31,3 @@ export default function LobbyPlayers({ players, isHost, kickCall}) {
     />
   );
 }
-
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingVertical: 8,
-  },
-  name: {
-    fontSize: 18,
-  },
-});

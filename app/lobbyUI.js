@@ -1,9 +1,10 @@
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import { Button, Text } from "react-native-paper";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { kick, leave, ready, useLobbySync} from './lobbyCalls.js'
-import LobbyPlayers from './components/lobbyPlayers.js';
+import { LobbyPlayers } from './components/lobbyPlayers.js';
+import { styles } from '../styles/Styles.js';
 
 export default function Lobby() {
     const router = useRouter();
@@ -63,19 +64,3 @@ export default function Lobby() {
     </View>
     );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    gap: 20,
-    alignItems: 'center',
-    backgroundColor: '#fff',
-  },
-  button: {borderRadius: 5},
-  title: {
-    marginBottom: 20, 
-    fontSize: 28, 
-    fontWeight: 600
-  }
-});
