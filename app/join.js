@@ -37,13 +37,13 @@ export default function FindLobby() {
       </Text>
 
       <TextInput
-        label="Game PIN" 
+        label="Game PIN"
+        keyboardType="default"
         maxLength={6}
         value={code}
-        onChangeText={setCode}
+        onChangeText={(text) => setCode(text.toUpperCase())}
         style={{ width: "85%", marginBottom: 20 }}
         mode="outlined"
-        keyboardType="number-pad"
       />
 
       <Button 

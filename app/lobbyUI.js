@@ -2,7 +2,7 @@ import { View } from 'react-native';
 import { Button, Text } from "react-native-paper";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { kick, leave, ready, useLobbyListener, startGame, usePlayerPresenceListener, useStartGameListener} from './lobbyCalls.js'
+import { kick, leave, ready, useLobbyListener, startGame, usePlayerDisconnectListener, useStartGameListener, useRedirectIfNotPresent} from './lobbyCalls.js'
 import { LobbyPlayers } from './components/lobbyPlayers.js';
 import { styles } from '../styles/Styles.js';
 import { chooseImpostor } from '../dbActions.js';
@@ -25,7 +25,8 @@ export default function Lobby() {
 
     // custom hooks must start with use as per react rules of hooks
     useLobbyListener(roomCode, router, setPlayers);
-    usePlayerPresenceListener(roomCode, playerId, isHost);
+    usePlayerDisconnectListener(roomCode, playerId, isHost);
+    useRedirectIfNotPresent(roomCode, playerId, router);
     useStartGameListener(roomCode, playerId, checkHost, router);
 
     return (

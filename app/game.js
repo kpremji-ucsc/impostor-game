@@ -4,7 +4,7 @@ import { Platform, View } from 'react-native';
 import { Button } from "react-native-paper";
 import { chatStyles, styles } from "../styles/Styles.js";
 import { ChatWindow } from "./components/chatWindow.js";
-import { usePlayerPresenceListener, leave } from "./lobbyCalls.js";
+import { usePlayerDisconnectListener, leave, useRedirectIfNotPresent } from "./lobbyCalls.js";
 import { useChatListener } from "./gameCalls.js";
 import { ChatInput } from "./components/chatInput.js";
 import { KeyboardAvoidingView } from "react-native";
@@ -17,7 +17,8 @@ export default function GameScreen() {
 
     const checkHost = (isHost === 'true');
 
-    usePlayerPresenceListener(roomCode, playerId, isHost);
+    usePlayerDisconnectListener(roomCode, playerId, isHost);
+    useRedirectIfNotPresent(roomCode, playerId, router);
     useChatListener(roomCode, setMessages);
 
     return(

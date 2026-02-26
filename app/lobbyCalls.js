@@ -52,7 +52,7 @@ export function useRedirectIfNotPresent(roomCode, playerId, router)
   }, [roomCode, playerId, router]);
 }
 
- export function usePlayerPresenceListener(roomCode, playerId, isHost){
+ export function usePlayerDisconnectListener(roomCode, playerId, isHost){
   useEffect(() => {
     onDisconnect(isHost ? roomRef(roomCode): playerRef(roomCode, playerId)).remove()
   }, [roomCode, playerId, isHost]);
