@@ -3,7 +3,7 @@ import { Button, Text, TextInput, Snackbar } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { styles } from '../styles/Styles.js';
-import { createCall } from './lobbyCalls.js';
+import { CreateRoom } from '../dbActions.js';
 
 export default function CreateLobby() {
   const router = useRouter();
@@ -11,9 +11,17 @@ export default function CreateLobby() {
   const [impostors, setImpostors] = useState("1");
   const [noLobbyCreatedAlert, setNoLobbyCreatedAlert] = useState(false);
 
-  const create = async (router, lobbySize, impostors) => {
+  const create = async () => {
       try {
-        const { roomCode, hostId, isHost } = await createCall(lobbySize, impostors);
+        // later change when we have SQLite to handle display name and persist locally
+        const username = "Player" + Math.random().toString(20).substring(2,6).toUpperCase();
+
+        const { roomCode, hostId, isHost } = await CreateRoom(
+                    username, 
+                    parseInt(lobbySize), 
+                    parseInt(impostors),
+                  );
+
           router.push({
               pathname: "/lobbyUI", 
               params: {
@@ -49,7 +57,7 @@ export default function CreateLobby() {
         maxLength={1}
         value={lobbySize}
         onChangeText={setLobbySize}
-        style={{ width: "40%", marginBottom: 20 }}
+        style={{ width: "85%", marginBottom: 20 }}
         mode="outlined"
         placeholder="Enter lobby size!"
         keyboardType="number-pad"
@@ -60,9 +68,9 @@ export default function CreateLobby() {
         maxLength={1}
         value={impostors}
         onChangeText={setImpostors}
-        style={{ width: "40%", marginBottom: 20 }}
+        style={{ width: "85%", marginBottom: 20 }}
         mode="outlined"
-        placeholder="Maximum number of imposters is three!"
+        placeholder="Maximum imposters is three!"
         keyboardType="number-pad"
       />
 

@@ -1,4 +1,4 @@
-import { View } from 'react-native';
+import { View, Image } from 'react-native';
 import { Button, Text } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { styles } from '../styles/Styles.js';
@@ -9,11 +9,21 @@ export default function Index() {
 
   return (
     <View style={styles.container}>
+      <Image
+        source={require('../assets/impostorGameLogo.png')}
+        style={styles.logo}
+      />
       <Text 
         style={styles.title} 
         variant="headlineMedium"
         > 
         Imposter Game 
+      </Text>
+
+      <Text
+        style={styles.caption}
+      >
+        A social deduction game.
       </Text>
 
       <Button 

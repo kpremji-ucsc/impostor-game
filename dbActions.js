@@ -1,14 +1,18 @@
-import { ref, set, remove, update, runTransaction } from "firebase/database";
+import { ref, set, remove, update, runTransaction, push, serverTimestamp } from "firebase/database";
 import { db } from "./firebaseConfig";
 
+export const roomRef = (roomCode) =>
+    ref(db, `rooms/${roomCode}/lobby`);
+
+export const playerRef = (roomCode, playerId) =>
+    ref(db, `rooms/${roomCode}/lobby/players/${playerId}`)
 
 export const CreateRoom = async (playerName, numPlayers, numImposters) => {
-    const roomCode = Math.random().toString(20).substring(2,6).toUpperCase();
-    const roomRef = ref(db, `rooms/${roomCode}`);
+    const roomCode = Math.random().toString(20).substring(2,8).toUpperCase();
     const hostId = Date.now().toString();
 
     try{
-        await set(roomRef, {
+        await set(roomRef(roomCode), {
             roomCode: roomCode,
             numImposters: numImposters,
             numPlayers: numPlayers,
@@ -16,7 +20,12 @@ export const CreateRoom = async (playerName, numPlayers, numImposters) => {
             createdAt: Date.now(),
             hostId: hostId,
             players: {
-                [hostId]: {name: playerName, isReady: true, isHost: true}
+                [hostId]: {
+                    name: playerName, 
+                    isReady: true, 
+                    isHost: true, 
+                    isImpostor: false,
+                }
             }
         });
         return ({roomCode, hostId, isHost: true});
@@ -28,10 +37,9 @@ export const CreateRoom = async (playerName, numPlayers, numImposters) => {
 }
 
 export const JoinRoom = async (roomCode, playerName) => {
-    const roomRef = ref(db, `rooms/${roomCode}`);
     const newPlayerId = Date.now().toString();
     try{
-            const status = await runTransaction(roomRef, (room) => {
+            const status = await runTransaction(roomRef(roomCode), (room) => {
             // check if room exists, then check room status
             if (room === null ) {return room;}
 
@@ -45,6 +53,7 @@ export const JoinRoom = async (roomCode, playerName) => {
                 name: playerName,
                 isReady: false,
                 isHost: false,
+                isImpostor: false,
             };
             return room;
         });
@@ -59,8 +68,7 @@ export const JoinRoom = async (roomCode, playerName) => {
 
 export const ReadyUp = async (roomCode, playerId, currentReadyStatus) => {
     try{
-        const playerRef = ref(db, `rooms/${roomCode}/players/${playerId}`);
-        await update(playerRef, {isReady: !currentReadyStatus});
+        await update(playerRef(roomCode, playerId), {isReady: !currentReadyStatus});
     } catch(e) {
         console.error("Failed to update ready status!: ", e)
     }
@@ -68,15 +76,89 @@ export const ReadyUp = async (roomCode, playerId, currentReadyStatus) => {
 
 export const LeaveRoom = async(roomCode, playerId, isHost) =>{
     try{
-        if (isHost){
-            const roomRef = ref(db, `rooms/${roomCode}`);
-            await remove(roomRef);
+        if (isHost) {
+            await remove(roomRef(roomCode));
+            return;
         }
-        const player = ref(db, `rooms/${roomCode}/players/${playerId}`);
+        else {
+        const player = ref(db, `rooms/${roomCode}/lobby/players/${playerId}`);
         await remove(player);
-        return true;
+        return;
+        }
     } catch(e) {
         console.error("Failed to leave: ", e);
+        throw e;
+    }
+}
+
+export const chooseImpostor = async (roomCode) => {
+
+    try{
+        await runTransaction(roomRef(roomCode), (room) => {
+            if (room === null) { return room; }
+
+            const currentPlayers = room.players ? Object.keys(room.players) : [];
+            // loop and reset status if this is playing again 
+            currentPlayers.forEach((id) => {room.players[id].isImpostor = false; });
+
+            // math.random by default varies between 0 and 1, and sort() swaps a pair if it is given a positive number
+            // by default it would all be positive and only swap items forwards
+            // to get a true shuffle, we adjust the range to give us a negative number half the time
+            const shuffledPlayers = currentPlayers.sort(() => Math.random() - 0.5);
+
+            // take a slice of our new shuffled players and these are now the impostors
+            const numImposters = Number (room.numImposters) || 1;
+            const impostors = shuffledPlayers.slice(0, numImposters);
+
+            impostors.forEach((id) => {room.players[id].isImpostor = true });
+            return room;
+        });
+        return;
+    } catch (e) {
+        throw e;
+    }
+}
+
+export const changeGameStatus = async (roomCode) => {
+    try {
+        await runTransaction(roomRef(roomCode), (room) => {
+            if (room === null) { return room; }
+            if (room.status === 'waiting') {
+                return {
+                    ...room,
+                    status: 'playing',
+                };
+            }
+            else {
+                return {
+                    ...room,
+                    status: 'waiting',
+                };
+            }
+        });
+        return;
+    } catch (e) {
+        console.error("Could not start game: ", e);
+        throw e;
+    }
+}
+
+export const pushMessage = async (roomCode, name, text) => {
+    if (!text || !text.trim()) return;
+    const chatLog = ref(db, `rooms/${roomCode}/chatLog`);
+
+    try{
+        const message = {
+            name,
+            text: text.trim(),
+            timestamp: serverTimestamp(),
+        };
+
+        // push() from Firebase generates a unique key for each push that is also lexigraphically sorted by time. 
+        // therefore, sorted by date automatically
+        await push(chatLog, message);
+    } catch (e) {
+        console.error("Could not push message to DB: ", e);
         throw e;
     }
 }

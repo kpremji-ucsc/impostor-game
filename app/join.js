@@ -37,21 +37,26 @@ export default function FindLobby() {
       </Text>
 
       <TextInput
-        label="Game PIN" 
+        label="Game PIN"
+        keyboardType="default"
         maxLength={6}
         value={code}
-        onChangeText={setCode}
-        style={{ width: "40%", marginBottom: 20 }}
+        onChangeText={(text) => setCode(text.toUpperCase())}
+        style={{ width: "85%", marginBottom: 20 }}
         mode="outlined"
-        keyboardType="number-pad"
       />
 
-      <Button mode="contained" onPress={join}>
+      <Button 
+        mode="contained" 
+        style={styles.button} 
+        onPress={join}
+      >
         Join
       </Button>
       
       <Button
         mode="contained" 
+        style={styles.button} 
         onPress={() => {router.replace("/")}}
       >
         Return
