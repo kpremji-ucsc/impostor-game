@@ -2,20 +2,31 @@ import { View } from 'react-native';
 import { Button, Text } from "react-native-paper";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { kick, leave, ready, useLobbySync} from './lobbyCalls.js'
+import { kick, leave, ready, useLobbyListener, startGame, usePlayerPresenceListener, useStartGameListener} from './lobbyCalls.js'
 import { LobbyPlayers } from './components/lobbyPlayers.js';
 import { styles } from '../styles/Styles.js';
+import { chooseImpostor } from '../dbActions.js';
 
 export default function Lobby() {
     const router = useRouter();
-    const { roomCode, playerId, isHost} = useLocalSearchParams();
-    const [players, setPlayers]  = useState(null);
-    const checkHost = isHost === 'true';
-    const myReady = players ? players.find(p => p.id === playerId): null;
-    const isReady = myReady ? myReady.isReady : false;
+    const { roomCode, playerId, isHost } = useLocalSearchParams();
+
+    const [players, setPlayers]  = useState([]);
+    const playerList = players ? Object.values(players) : [];
+
+    const myPlayer = players.find(p => p.id === playerId);
+    const isReady = myPlayer?.isReady ?? false;
+    const allReady = 
+      playerList.length > 1 && 
+      playerList.every((player) => player.isReady);
+    
+    const checkHost = (isHost === 'true');
+
 
     // custom hooks must start with use as per react rules of hooks
-    useLobbySync(roomCode, playerId, checkHost, router, setPlayers)
+    useLobbyListener(roomCode, router, setPlayers);
+    usePlayerPresenceListener(roomCode, playerId, isHost);
+    useStartGameListener(roomCode, playerId, checkHost, router);
 
     return (
     <View style={styles.container}>
@@ -27,10 +38,14 @@ export default function Lobby() {
         />
 
         {checkHost ? (
-          <Button 
+          <Button
+            disabled={!allReady}
             mode="contained" 
             style={styles.button} 
-            onPress={() => router.push("/home")}
+            onPress={() => {
+              startGame(roomCode)
+              chooseImpostor(roomCode)
+            }}
           >
             Start Game
           </Button>
@@ -44,23 +59,13 @@ export default function Lobby() {
           </Button> )
         }
 
-        {checkHost ? ( 
           <Button 
             mode="outlined"
             onPress={() => leave(checkHost, roomCode, playerId, router)}
             style={styles.button}
           > 
-            Close Lobby 
+            {checkHost ? 'Close Lobby' : 'Leave Lobby'}
           </Button> 
-          ) : (
-          <Button 
-            mode="outlined"
-            onPress={() => leave(checkHost, roomCode, playerId, router)}
-            style={styles.button}
-          > 
-            Leave Lobby 
-          </Button> )
-        }
     </View>
     );
 }

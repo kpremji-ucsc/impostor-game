@@ -4,7 +4,7 @@ import { styles } from "../../styles/Styles.js";
 
 
 // kick function is defined in lobbyCalls.js to keep the design purely UI, not having to touch DB 
-export default function LobbyPlayers({ players, isHost, kickCall}) {
+export const LobbyPlayers = ({ players, isHost, kickCall}) => {
   return (
     <FlatList
       data={players}
@@ -12,13 +12,13 @@ export default function LobbyPlayers({ players, isHost, kickCall}) {
       renderItem={({ item }) => (
         <View style={styles.row}>
           <Text style={styles.name}>
-            {item.name} {item.isHost && " (Host)"} {item.isReady && "READY"}
+            {item.name} {item.isHost && "(Host)"} {item.isReady && "READY"}
           </Text>
 
           {isHost && !item.isHost && (
             <Button
               mode="outlined"
-              style={styles.button} 
+              style={[styles.button, {width: '30%'}]} 
               compact
               textColor="red"
               onPress ={() => kickCall(item.id)}

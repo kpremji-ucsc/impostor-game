@@ -41,17 +41,22 @@ export default function FindLobby() {
         maxLength={6}
         value={code}
         onChangeText={setCode}
-        style={{ width: "40%", marginBottom: 20 }}
+        style={{ width: "85%", marginBottom: 20 }}
         mode="outlined"
         keyboardType="number-pad"
       />
 
-      <Button mode="contained" onPress={join}>
+      <Button 
+        mode="contained" 
+        style={styles.button} 
+        onPress={join}
+      >
         Join
       </Button>
       
       <Button
         mode="contained" 
+        style={styles.button} 
         onPress={() => {router.replace("/")}}
       >
         Return
