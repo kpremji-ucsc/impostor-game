@@ -53,7 +53,18 @@ export default function FindLobby() {
       >
         Join
       </Button>
-      
+      <Button 
+        mode="outlined"
+        onPress={() => {
+          if (isPreview) {
+            router.replace("/create");
+            return;
+          }
+        }}
+        style={styles.button}
+                > 
+        {"Create Lobby"}
+      </Button> 
       <Button
         mode="contained" 
         style={styles.button} 

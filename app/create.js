@@ -14,7 +14,7 @@ export default function CreateLobby() {
   const create = async () => {
       try {
         // later change when we have SQLite to handle display name and persist locally
-        const username = "Player" + Math.random().toString(20).substring(2,6).toUpperCase();
+        const username = localStorage.getItem("displayName");
 
         const { roomCode, hostId, isHost } = await CreateRoom(
                     username, 
