@@ -5,6 +5,7 @@ import { styles } from '../styles/Styles.js';
 
 export default function Index() {
   const router = useRouter();
+  const userId = typeof window !== "undefined" ? localStorage.getItem("userId") : null;
 
 
   return (
@@ -26,29 +27,35 @@ export default function Index() {
         A social deduction game.
       </Text>
 
-      <Button 
-        mode="contained"
-        style={styles.button} 
-        onPress={() => router.push("/login")}
-        >
-        Login
-      </Button>
+      {userId === null ? (
+        <>
+          <Button 
+            mode="contained"
+            style={styles.button} 
+            onPress={() => router.push("/login")}
+            >
+            Login
+          </Button>
 
-      <Button 
-        mode="contained" 
-        style={styles.button} 
-        onPress={() => router.push("/join")}
-        >
-        Guest
-      </Button>
-
-      <Button 
+          <Button 
+            mode="contained" 
+            style={styles.button} 
+            onPress={() => router.push("/join")}
+            >
+            Guest
+          </Button>
+        </>
+      ) : (
+        <Button 
         mode="contained" 
         style={styles.button} 
         onPress={() => router.push("/create")}
         >
         Test Lobby
       </Button>
+      )}
+
+     
 
     </View>
   );

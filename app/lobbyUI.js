@@ -1,7 +1,7 @@
-import { View } from 'react-native';
-import { Button, Text } from "react-native-paper";
+import { View, Modal } from 'react-native';
+import { Button, Text, TextInput } from "react-native-paper";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { useState } from "react";
+import { useState, useEffect  } from "react";
 import { kick, leave, ready, useLobbyListener, startGame, usePlayerDisconnectListener, useStartGameListener, useRedirectIfNotPresent} from './lobbyCalls.js'
 import { LobbyPlayers } from './components/lobbyPlayers.js';
 import { styles } from '../styles/Styles.js';
@@ -9,7 +9,8 @@ import { chooseImpostor } from '../dbActions.js';
 
 export default function Lobby() {
     const router = useRouter();
-    const { roomCode, playerId, isHost } = useLocalSearchParams();
+    const { roomCode, playerId, isHost, preview } = useLocalSearchParams();
+    const isPreview = preview === "true";
 
     const [players, setPlayers]  = useState([]);
     const playerList = players ? Object.values(players) : [];
@@ -21,24 +22,38 @@ export default function Lobby() {
       playerList.every((player) => player.isReady);
     
     const checkHost = (isHost === 'true');
+    const [showPopup, setShowPopup] = useState(false);
+    const [displayName, setDisplayName] = useState("");
+    useEffect(() => {
+  const savedName = localStorage.getItem("displayName");
+  if (!savedName) {
+    setShowPopup(true);
+  } else {
+    setDisplayName(savedName);
+  }
+}, []);
+    // Preview mode is for UI-only navigation from login without an active room.
 
-
-    // custom hooks must start with use as per react rules of hooks
-    useLobbyListener(roomCode, router, setPlayers);
-    usePlayerDisconnectListener(roomCode, playerId, isHost);
-    useRedirectIfNotPresent(roomCode, playerId, router);
-    useStartGameListener(roomCode, playerId, checkHost, router);
+    if (!isPreview) {
+      // custom hooks must start with use as per react rules of hooks
+      useLobbyListener(roomCode, router, setPlayers);
+      usePlayerDisconnectListener(roomCode, playerId, isHost);
+      useRedirectIfNotPresent(roomCode, playerId, router);
+      useStartGameListener(roomCode, playerId, checkHost, router);
+    }
 
     return (
     <View style={styles.container}>
-        <Text style={styles.title} variant="headlineMedium"> Join with Game PIN: {roomCode} </Text>
+        <Text style={styles.title} variant="headlineMedium">
+          {isPreview ? "Lobby Preview" : `Join with Game PIN: ${roomCode}`}
+        </Text>
         <LobbyPlayers 
           players={players} 
           isHost={checkHost} 
           kickCall={ (targetId) => { kick(roomCode, targetId)}} 
         />
 
-        {checkHost ? (
+        {checkHost && !isPreview ? (
           <Button
             disabled={!allReady}
             mode="contained" 
@@ -50,23 +65,51 @@ export default function Lobby() {
           >
             Start Game
           </Button>
-          ) : (
+          ) : !isPreview ? (
           <Button 
             mode="contained" 
             style={styles.button} 
             onPress={() => {ready(roomCode, playerId, isReady)}}
           >
             {isReady ? "Unready" : "Ready Up"}
-          </Button> )
+          </Button> ) : null
         }
 
           <Button 
             mode="outlined"
-            onPress={() => leave(checkHost, roomCode, playerId, router)}
+            onPress={() => {
+              if (isPreview) {
+                router.replace("/");
+                return;
+              }
+              leave(checkHost, roomCode, playerId, router);
+            }}
             style={styles.button}
           > 
-            {checkHost ? 'Close Lobby' : 'Leave Lobby'}
-          </Button> 
+            {isPreview ? "Return" : checkHost ? 'Close Lobby' : 'Leave Lobby'}
+          </Button>
+          <Button mode="contained" onPress={() => setShowPopup(true)}>
+        Change Username
+      </Button>
+
+     <Modal visible={showPopup} transparent animationType="fade">
+  <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)", justifyContent: "center", alignItems: "center" }}>
+    <View style={{ width: "85%", backgroundColor: "#fff", padding: 16, borderRadius: 12 }}>
+      <Text>Enter display name</Text>
+      <TextInput value={displayName} onChangeText={setDisplayName} />
+      <Button
+        mode="contained"
+        onPress={() => {
+          if (!displayName.trim()) return;
+          localStorage.setItem("displayName", displayName.trim());
+          setShowPopup(false);
+        }}
+      >
+        Save
+      </Button>
+    </View>
+  </View>
+</Modal>
     </View>
     );
 }
