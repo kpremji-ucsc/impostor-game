@@ -5,7 +5,7 @@ import { useState, useEffect  } from "react";
 import { kick, leave, ready, useLobbyListener, startGame, usePlayerDisconnectListener, useStartGameListener, useRedirectIfNotPresent} from './lobbyCalls.js'
 import { LobbyPlayers } from './components/lobbyPlayers.js';
 import { styles } from '../styles/Styles.js';
-import { chooseImpostor } from '../dbActions.js';
+import { chooseImpostor,pushUserName } from '../dbActions.js';
 
 export default function Lobby() {
     const router = useRouter();
@@ -25,12 +25,14 @@ export default function Lobby() {
     const [showPopup, setShowPopup] = useState(false);
     const [displayName, setDisplayName] = useState("");
     useEffect(() => {
-  const savedName = localStorage.getItem("displayName");
-  if (!savedName) {
-    setShowPopup(true);
-  } else {
+  const savedName = localStorage.getItem("displayName")?.trim() ?? "";
+  if (savedName) {
     setDisplayName(savedName);
+    setShowPopup(false);
+    return;
   }
+
+  setShowPopup(true);
 }, []);
     // Preview mode is for UI-only navigation from login without an active room.
 
@@ -102,6 +104,9 @@ export default function Lobby() {
         onPress={() => {
           if (!displayName.trim()) return;
           localStorage.setItem("displayName", displayName.trim());
+          if(localStorage.getItem("userId")!= null ) {
+              pushUserName (localStorage.getItem("userId"), displayName.trim())
+          }
           setShowPopup(false);
         }}
       >
