@@ -1,14 +1,18 @@
 import { ref, set, remove, update, runTransaction, push, serverTimestamp, get } from "firebase/database";
+import { ref, set, get, remove, update, runTransaction, push, serverTimestamp } from "firebase/database";
 import { db } from "./firebaseConfig";
 
 export const roomRef = (roomCode) =>
     ref(db, `rooms/${roomCode}/lobby`);
 
+export const chatRef = (roomCode) =>
+    ref(db, `rooms/${roomCode}/chatLog`);
+
 export const playerRef = (roomCode, playerId) =>
     ref(db, `rooms/${roomCode}/lobby/players/${playerId}`)
 
 export const CreateRoom = async (playerName, numPlayers, numImposters) => {
-    const roomCode = Math.random().toString(20).substring(2,8).toUpperCase();
+    const roomCode = Math.random().toString(20).substring(2,7).toUpperCase();
     const hostId = Date.now().toString();
 
     try{
@@ -38,12 +42,18 @@ export const CreateRoom = async (playerName, numPlayers, numImposters) => {
 
 export const JoinRoom = async (roomCode, playerName) => {
     const newPlayerId = Date.now().toString();
+
+    const snap = await get(roomRef(roomCode));
+    if (!snap.exists()) {
+        throw new Error("Lobby not found!");
+    }
+
     try{
             const status = await runTransaction(roomRef(roomCode), (room) => {
             // check if room exists, then check room status
-            if (room === null ) {return room;}
+            if (room === null ) return room;
 
-            if (room.status !== "waiting") {return;}
+            if (room.status !== "waiting") return;
 
             const MAX_PLAYERS = room.numPlayers;
             const currentPlayers = room.players ? Object.keys(room.players) : [];

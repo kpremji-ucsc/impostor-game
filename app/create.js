@@ -1,9 +1,11 @@
 import { View } from 'react-native';
-import { Button, Text, TextInput, Snackbar } from "react-native-paper";
+import { Text, TextInput, Snackbar } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { styles } from '../styles/Styles.js';
 import { CreateRoom } from '../dbActions.js';
+import { AppButton } from './components/appButton.js';
+import { MovingDiagonalBackground } from './components/movingBackground.js';
 
 export default function CreateLobby() {
   const router = useRouter();
@@ -44,64 +46,77 @@ export default function CreateLobby() {
         || parseInt(impostors) > parseInt(lobbySize);
 
   return (
-    <View style={styles.container}>
-      <Text 
-        style={styles.title} 
-        variant="headlineMedium"
-        > 
-        Create Lobby 
-      </Text>
+    <View style={{ flex: 1 }}>
+      <MovingDiagonalBackground/>
+      <View style={styles.container}>
+        <Text 
+          style={styles.title} 
+          variant="headlineMedium"
+          > 
+          Create Lobby 
+        </Text>
 
-      <TextInput
-        label="Lobby Size" 
-        maxLength={1}
-        value={lobbySize}
-        onChangeText={setLobbySize}
-        style={{ width: "85%", marginBottom: 20 }}
-        mode="outlined"
-        placeholder="Enter lobby size!"
-        keyboardType="number-pad"
-      />
+        <TextInput
+          label={          
+            <Text
+              style={{ fontFamily: 'SpecialElite' }}
+            >
+              Lobby Size
+            </Text>}
+          maxLength={1}
+          value={lobbySize}
+          onChangeText={setLobbySize}
+          style={{ width: "85%", marginBottom: 20 }}
+          mode="outlined"
+          placeholder="Enter lobby size!"
+          contentStyle={{ fontFamily: 'SpaceGrotesk' }}
+          keyboardType="number-pad"
+        />
 
-      <TextInput
-        label="Impostors" 
-        maxLength={1}
-        value={impostors}
-        onChangeText={setImpostors}
-        style={{ width: "85%", marginBottom: 20 }}
-        mode="outlined"
-        placeholder="Maximum imposters is three!"
-        keyboardType="number-pad"
-      />
+        <TextInput
+          label={          
+            <Text
+              style={{ fontFamily: 'SpecialElite' }}
+            >
+              Impostors
+            </Text>}
+          maxLength={1}
+          value={impostors}
+          onChangeText={setImpostors}
+          style={{ width: "85%", marginBottom: 20 }}
+          mode="outlined"
+          placeholder="Maximum imposters is three!"
+          contentStyle={{ fontFamily: 'SpaceGrotesk' }}
+          keyboardType="number-pad"
+        />
 
-        <Button
-          disabled={isInvalid}
-          style={styles.button} 
-          mode="contained" 
-          onPress={create}
-        >
-          Create Lobby
-        </Button>
+          <AppButton
+            disabled={isInvalid}
+            mode="contained" 
+            onPress={create}
+          >
+            Create Lobby
+          </AppButton>
 
-        <Button
-          mode="contained" 
-          style={styles.button} 
-          onPress={() => {router.replace("/")}}
-        >
-          Return
-        </Button>
+          <AppButton
+            mode="contained" 
+            onPress={() => {router.replace("/")}}
+          >
+            Return
+          </AppButton>
 
-        <Snackbar
-          visible={noLobbyCreatedAlert}
-          onDismiss={() => setNoLobbyCreatedAlert(false)}
-          duration={3000}
-          action={{
-            icon: "close",
-            onPress: () => setNoLobbyCreatedAlert(false),
-          }}
-        >
-        Lobby not able to be created! Please try again.
-      </Snackbar>
+          <Snackbar
+            visible={noLobbyCreatedAlert}
+            onDismiss={() => setNoLobbyCreatedAlert(false)}
+            duration={3000}
+            action={{
+              icon: "close",
+              onPress: () => setNoLobbyCreatedAlert(false),
+            }}
+          >
+          Lobby not able to be created! Please try again.
+        </Snackbar>
+      </View>
     </View>
   );
 }

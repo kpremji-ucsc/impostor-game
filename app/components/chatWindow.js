@@ -7,7 +7,6 @@ export const ChatWindow = ({ messages, playerName }) => {
 
   const renderItem = ({ item }) => {
     const isMe = item.name === playerName;
-
     return (
       <View style={[
         chatStyles.chatRow, 

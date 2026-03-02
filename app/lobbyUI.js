@@ -1,11 +1,15 @@
-import { View, Modal } from 'react-native';
-import { Button, Text, TextInput } from "react-native-paper";
+import { View } from 'react-native';
+import { Text } from "react-native-paper";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useState, useEffect  } from "react";
 import { kick, leave, ready, useLobbyListener, startGame, usePlayerDisconnectListener, useStartGameListener, useRedirectIfNotPresent} from './lobbyCalls.js'
 import { LobbyPlayers } from './components/lobbyPlayers.js';
 import { styles } from '../styles/Styles.js';
 import { chooseImpostor,pushUserName } from '../dbActions.js';
+import { chooseImpostor } from '../dbActions.js';
+import { DisplayNameModal } from './components/displayNamePopUp.js';
+import { AppButton } from './components/appButton.js';
+import { MovingDiagonalBackground } from './components/movingBackground.js';
 
 export default function Lobby() {
     const router = useRouter();
@@ -23,7 +27,10 @@ export default function Lobby() {
     
     const checkHost = (isHost === 'true');
     const [showPopup, setShowPopup] = useState(false);
-    const [displayName, setDisplayName] = useState("");
+    const [displayName, setDisplayName] = useState(() => {
+      return typeof window !== 'undefined' ? localStorage.getItem("displayName") || "" : ""}
+    );
+
     useEffect(() => {
   const savedName = localStorage.getItem("displayName")?.trim() ?? "";
   if (savedName) {
@@ -45,54 +52,51 @@ export default function Lobby() {
     }
 
     return (
-    <View style={styles.container}>
-        <Text style={styles.title} variant="headlineMedium">
-          {isPreview ? "Lobby Preview" : `Join with Game PIN: ${roomCode}`}
-        </Text>
-        <LobbyPlayers 
-          players={players} 
-          isHost={checkHost} 
-          kickCall={ (targetId) => { kick(roomCode, targetId)}} 
-        />
+    <View style={{ flex: 1 }}>
+      <MovingDiagonalBackground/>
+      <View style={styles.container}>
+          <Text style={styles.title} variant="headlineMedium">
+            {isPreview ? "Lobby Preview" : `Join with Game PIN: ${roomCode}`}
+          </Text>
+          <LobbyPlayers 
+            players={players} 
+            isHost={checkHost} 
+            kickCall={ (targetId) => { kick(roomCode, targetId)}} 
+          />
 
-        {checkHost && !isPreview ? (
-          <Button
-            disabled={!allReady}
-            mode="contained" 
-            style={styles.button} 
-            onPress={() => {
-              startGame(roomCode)
-              chooseImpostor(roomCode)
-            }}
-          >
-            Start Game
-          </Button>
-          ) : !isPreview ? (
-          <Button 
-            mode="contained" 
-            style={styles.button} 
-            onPress={() => {ready(roomCode, playerId, isReady)}}
-          >
-            {isReady ? "Unready" : "Ready Up"}
-          </Button> ) : null
-        }
+          {checkHost && !isPreview ? (
+            <AppButton
+              disabled={!allReady}
+              mode="contained" 
+              onPress={() => {
+                startGame(roomCode)
+                chooseImpostor(roomCode)
+              }}
+            >
+              Start Game
+            </AppButton>
+            ) : !isPreview ? (
+            <AppButton 
+              mode="contained" 
+              style={styles.button} 
+              onPress={() => {ready(roomCode, playerId, isReady)}}
+            >
+              {isReady ? "Unready" : "Ready Up"}
+            </AppButton> ) : null
+          }
 
-          <Button 
-            mode="outlined"
-            onPress={() => {
-              if (isPreview) {
-                router.replace("/");
-                return;
-              }
-              leave(checkHost, roomCode, playerId, router);
-            }}
-            style={styles.button}
-          > 
-            {isPreview ? "Return" : checkHost ? 'Close Lobby' : 'Leave Lobby'}
-          </Button>
-          <Button mode="contained" onPress={() => setShowPopup(true)}>
-        Change Username
-      </Button>
+            <AppButton 
+              mode="outlined"
+              onPress={() => {
+                if (isPreview) {
+                  router.replace("/");
+                  return;
+                }
+                leave(checkHost, roomCode, playerId, router);
+              }}
+            > 
+              {isPreview ? "Return" : checkHost ? 'Close Lobby' : 'Leave Lobby'}
+            </AppButton>
 
      <Modal visible={showPopup} transparent animationType="fade">
   <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)", justifyContent: "center", alignItems: "center" }}>

@@ -27,7 +27,8 @@ export const ChatInput = ({ roomCode, playerName}) => {
                 mode="outlined"
                 placeholder="Start typing... "
                 value={text}
-                style={chatStyles.textInputStyle}
+                style={[chatStyles.textInputStyle]}
+                contentStyle={{ fontFamily: 'SpecialElite' }}
                 onChangeText={setText}
                 onSubmitEditing={handleSend}
             />
