@@ -5,6 +5,7 @@ import { useState, useEffect  } from "react";
 import { kick, leave, ready, useLobbyListener, startGame, usePlayerDisconnectListener, useStartGameListener, useRedirectIfNotPresent} from './lobbyCalls.js'
 import { LobbyPlayers } from './components/lobbyPlayers.js';
 import { styles } from '../styles/Styles.js';
+import { chooseImpostor,pushUserName } from '../dbActions.js';
 import { chooseImpostor } from '../dbActions.js';
 import { DisplayNameModal } from './components/displayNamePopUp.js';
 import { AppButton } from './components/appButton.js';
@@ -31,15 +32,15 @@ export default function Lobby() {
     );
 
     useEffect(() => {
-      if (!displayName) { setShowPopup(true); }
-    }, [displayName]);
+  const savedName = localStorage.getItem("displayName")?.trim() ?? "";
+  if (savedName) {
+    setDisplayName(savedName);
+    setShowPopup(false);
+    return;
+  }
 
-    const handleSaveName = () => {
-      if (!displayName.trim()) return;
-      localStorage.setItem("displayName", displayName.trim());
-      setShowPopup(false);
-    }
-
+  setShowPopup(true);
+}, []);
     // Preview mode is for UI-only navigation from login without an active room.
 
     if (!isPreview) {
@@ -97,21 +98,27 @@ export default function Lobby() {
               {isPreview ? "Return" : checkHost ? 'Close Lobby' : 'Leave Lobby'}
             </AppButton>
 
-            <AppButton 
-              mode="contained" 
-              onPress={() => setShowPopup(true)}
-            >
-              Change Username
-            </AppButton>
-
-        <DisplayNameModal
-          visible={showPopup}
-          displayName={displayName}
-          setDisplayName={setDisplayName}
-          onSave={handleSaveName}
-        />
-
-      </View>
+     <Modal visible={showPopup} transparent animationType="fade">
+  <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)", justifyContent: "center", alignItems: "center" }}>
+    <View style={{ width: "85%", backgroundColor: "#fff", padding: 16, borderRadius: 12 }}>
+      <Text>Enter display name</Text>
+      <TextInput value={displayName} onChangeText={setDisplayName} />
+      <Button
+        mode="contained"
+        onPress={() => {
+          if (!displayName.trim()) return;
+          localStorage.setItem("displayName", displayName.trim());
+          if(localStorage.getItem("userId")!= null ) {
+              pushUserName (localStorage.getItem("userId"), displayName.trim())
+          }
+          setShowPopup(false);
+        }}
+      >
+        Save
+      </Button>
+    </View>
+  </View>
+</Modal>
     </View>
     );
 }

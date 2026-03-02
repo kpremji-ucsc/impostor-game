@@ -1,3 +1,4 @@
+import { ref, set, remove, update, runTransaction, push, serverTimestamp, get } from "firebase/database";
 import { ref, set, get, remove, update, runTransaction, push, serverTimestamp } from "firebase/database";
 import { db } from "./firebaseConfig";
 
@@ -170,4 +171,28 @@ export const pushMessage = async (roomCode, name, text) => {
         console.error("Could not push message to DB: ", e);
         throw e;
     }
+}
+
+export const pushUserName = async (userId, name) => {
+    if (!name || !name.trim()) return;
+    
+    const userRef = ref(db, `users/${userId}`);
+    console.log(userId, userRef);
+    try {
+        await update(userRef, { name: name.trim() },{ userId: userId.trim() });
+    } catch (e) {
+        console.error("Could not update user name in DB: ", e);
+        throw e;
+    }
+        };
+
+export const getUserName = async (userId) => {
+const userName = ref(db, `users/${userId}/name`);
+    try {
+        const snapshot = await get(userName);
+            return snapshot.val(); } catch (e) {
+        console.error("Could not get user name from DB: ", e);
+        throw e;
+    }
+   
 }
