@@ -35,7 +35,7 @@ export function Landing() {
           console.error("Could not get user name: ", e);
           localStorage.removeItem("displayName");
          }
-         router.replace({ pathname: "/lobbyUI", params: { preview: "true" } });
+         router.replace({ pathname: "/create", params: { preview: "true" } });
       }}
       onError={() => console.log("Login Failed")}
     />
