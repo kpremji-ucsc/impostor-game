@@ -110,6 +110,13 @@ export default function Index() {
             </AppButton>
 
             <AppButton
+              mode="contained"
+              onPress={() => router.push("/createWordbank")}
+            >
+              Create Wordbank
+            </AppButton>
+
+            <AppButton
               mode="outlined"
               onPress={() => setShowNameModal(true)}
             >
