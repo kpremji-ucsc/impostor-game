@@ -1,8 +1,39 @@
-import { StyleSheet, Dimensions } from "react-native";
+import { StyleSheet, Dimensions, } from "react-native";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 export const styles = StyleSheet.create({
+
+  bg: {
+    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    backgroundColor: '#fff',
+    zIndex: -1,
+    overflow: 'hidden',
+  },
+  bgWrapper: {
+    width: screenWidth * 2,
+    height: screenHeight * 2,
+    flexDirection: 'column',
+  },
+  bgImage:{
+    width: 500,
+    height: 500,
+    opacity: 0.20,
+  },
+  bgRow:{
+    flexDirection: 'row',
+  },
+
+
+  popUp: { 
+    flex: 1, 
+    backgroundColor: "rgba(0,0,0,0.4)", 
+    justifyContent: "center",
+     alignItems: "center" 
+  },
+
+
   row: {
     flex: 1,
     width: screenWidth * 0.85,
@@ -11,32 +42,52 @@ export const styles = StyleSheet.create({
     gap: 12,
     paddingVertical: 8,
   },
-  name: {
-    fontSize: screenHeight * 0.022,
-    width: '80%',
-  },
   container: {
     flex: 1,
     padding: 20,
     gap: 12,
-    backgroundColor: '#fff',
+    backgroundColor: 'transparent',
     alignItems: 'center',
     justifyContent: 'center',
   },
+
+
   button: {
+    marginTop: 5,
+    alignSelf: 'center',
     borderRadius: 5,
     width: '45%',
   },
+
+
   title: {
+    fontFamily: 'SpaceGrotesk',
     marginBottom: 20, 
     fontSize: 30, 
     fontWeight: 600,
   },
   caption:{
+    fontFamily: 'SpecialElite',
     fontSize: 15,
     color: '#777',
     marginBottom: 100,
   },
+  text: {
+    fontFamily: 'SpaceGrotesk',
+  },
+  name: {
+    fontFamily: 'SpaceGrotesk',
+    fontSize: screenHeight * 0.022,
+    width: '80%',
+  },
+  ready: {
+    fontFamily: 'SpaceGrotesk',
+    fontSize: screenHeight * 0.0245,
+    width: '80%',
+    color: '#4F7942'
+  },
+  
+  
   logo:{
     width: 100,
     height: 100,
@@ -52,9 +103,9 @@ export const chatStyles = StyleSheet.create({
     overflow: 'hidden',
     flex: 1,
     borderWidth: 1,
-    borderColor: '#000',
-    borderRadius: 10,
-    margin:10,
+    borderColor: '#888',
+    borderRadius: 5,
+    margin: 5,
     backgroundColor: '#f9f9f9',
   },
   chatListContent:{
@@ -70,6 +121,8 @@ export const chatStyles = StyleSheet.create({
   theirRow:{
     justifyContent: 'flex-start',
   },
+
+
   bubble: {
     paddingVertical: 8,
     paddingHorizontal: 12,
@@ -83,7 +136,6 @@ export const chatStyles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 1,
   },
-
   myBubble: {
     backgroundColor: '#B9FF66',
     borderBottomRightRadius: 2,
@@ -92,9 +144,11 @@ export const chatStyles = StyleSheet.create({
     backgroundColor: '#E5E5EA',
     borderBottomLeftRadius: 2,
   },
+
+
   senderName: {
+    fontFamily: 'SpaceGrotesk' ,
     fontSize: screenHeight * 0.022,
-    fontWeight: '450',
     marginBottom: 2,
     color: '#555',
   },
@@ -104,6 +158,15 @@ export const chatStyles = StyleSheet.create({
     marginBottom: 2,
     color: '#000'
   },
+  systemText: {
+    fontSize: screenHeight * 0.020,
+    fontStyle: 'italic',
+    textAlign: 'center',
+    fontWeight: '300',
+    marginBottom: 2,
+    color: '#777'
+  },
+
 
   inputContainer: {
     flexDirection: 'row',
@@ -113,14 +176,17 @@ export const chatStyles = StyleSheet.create({
     marginRight: 10,
     marginBottom: 20,
   },
+
+
   textInputStyle: {
     flex: 1,
     marginRight: 8,
   },
   iconStyle:{
+    backgroundColor: 'white',
     padding: '100',
     borderWidth: 1,
-    borderColor: '#000',
+    borderColor: '#888',
     borderRadius: 10,
   },
 })
