@@ -1,12 +1,11 @@
-import { View } from 'react-native';
-import { Text } from "react-native-paper";
+import { View, Modal } from 'react-native';
+import { Text, TextInput, Button } from "react-native-paper";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useState, useEffect  } from "react";
 import { kick, leave, ready, useLobbyListener, startGame, usePlayerDisconnectListener, useStartGameListener, useRedirectIfNotPresent} from './lobbyCalls.js'
 import { LobbyPlayers } from './components/lobbyPlayers.js';
 import { styles } from '../styles/Styles.js';
 import { chooseImpostor,pushUserName } from '../dbActions.js';
-import { chooseImpostor } from '../dbActions.js';
 import { DisplayNameModal } from './components/displayNamePopUp.js';
 import { AppButton } from './components/appButton.js';
 import { MovingDiagonalBackground } from './components/movingBackground.js';
@@ -97,8 +96,9 @@ export default function Lobby() {
             > 
               {isPreview ? "Return" : checkHost ? 'Close Lobby' : 'Leave Lobby'}
             </AppButton>
-
+          </View>
      <Modal visible={showPopup} transparent animationType="fade">
+
   <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)", justifyContent: "center", alignItems: "center" }}>
     <View style={{ width: "85%", backgroundColor: "#fff", padding: 16, borderRadius: 12 }}>
       <Text>Enter display name</Text>
@@ -120,5 +120,6 @@ export default function Lobby() {
   </View>
 </Modal>
     </View>
+
     );
 }
