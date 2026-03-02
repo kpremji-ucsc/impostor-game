@@ -1,5 +1,6 @@
 import { View, FlatList } from "react-native";
-import { Text, Button } from "react-native-paper";
+import { Text } from "react-native-paper";
+import { AppButton } from "./appButton.js";
 import { styles } from "../../styles/Styles.js";
 
 
@@ -12,19 +13,27 @@ export const LobbyPlayers = ({ players, isHost, kickCall}) => {
       renderItem={({ item }) => (
         <View style={styles.row}>
           <Text style={styles.name}>
-            {item.name} {item.isHost && "(Host)"} {item.isReady && "READY"}
+            {item.name} {item.isHost && "(Host)"}{"   "}
+            {item.isReady && (
+              <Text style={styles.ready}>
+                READY
+              </Text>
+            )}
           </Text>
 
           {isHost && !item.isHost && (
-            <Button
+            <AppButton
               mode="outlined"
-              style={[styles.button, {width: '30%'}]} 
+              style={{width: '25%'}}
               compact
-              textColor="red"
               onPress ={() => kickCall(item.id)}
             >
-              Kick
-            </Button>
+              <Text
+                style={[{ fontFamily: 'SpaceGrotesk', color: 'red'}]}
+              >
+                  Kick
+              </Text>
+            </AppButton>
           )}
         </View>
       )}

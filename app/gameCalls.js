@@ -1,13 +1,13 @@
 import { useEffect } from "react";
-import { ref, onValue } from "firebase/database"
-import { db } from "../firebaseConfig";
+import { onValue, onDisconnect, push, serverTimestamp} from "firebase/database"
+import { chatRef } from "../dbActions";
 
 export const useChatListener = (roomCode, setMessages) => {
     useEffect(() => {
         if (!roomCode) return;
 
-        const chatRef = ref(db, `rooms/${roomCode}/chatLog`)
-        const killListener = onValue(chatRef, (snapshot) => {
+        const chatLogRef = chatRef(roomCode);
+        const killListener = onValue(chatLogRef, (snapshot) => {
             const chatSnapshot = snapshot.val();
             if (!chatSnapshot || typeof chatSnapshot !== "object") return;
 
@@ -20,4 +20,26 @@ export const useChatListener = (roomCode, setMessages) => {
 
         return() => killListener();
     }, [roomCode, setMessages]);
+}
+
+export function useDisconnectChatAlerter(roomCode, username) {
+  useEffect(() => {
+    if (!roomCode) return;
+
+    const chatLogRef = chatRef(roomCode)
+    const sendDisconnectMessage = push(chatLogRef);
+    const disconnectTask = onDisconnect(sendDisconnectMessage);
+
+    disconnectTask.set({
+      name: "System",
+      text: `${username} has disconnected mid-game.`,
+      timestamp: serverTimestamp(),
+    }).catch((e) => {
+        console.error('couldnt arm task', e);
+    });
+
+    return () => {
+      disconnectTask.cancel();
+    };
+  }, [roomCode, username]); 
 }

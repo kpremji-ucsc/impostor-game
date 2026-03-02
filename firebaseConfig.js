@@ -1,5 +1,7 @@
-import {initializeApp, getApps, getApp} from "firebase/app";
-import {getDatabase} from "firebase/database";
+import { initializeApp, getApps, getApp } from "firebase/app";
+import { getDatabase, enableLogging } from "firebase/database";
+
+enableLogging(true);
 
 // copied this object from firebase web init
 const firebaseConfig = {

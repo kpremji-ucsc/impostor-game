@@ -1,8 +1,9 @@
-import { ReadyUp, LeaveRoom, changeGameStatus } from '../dbActions.js';
+import { ReadyUp, LeaveRoom, changeGameStatus, pushMessage } from '../dbActions.js';
 import { Platform, Alert } from 'react-native';
 import { useEffect, useRef } from 'react';
 import { onValue, onDisconnect, child } from 'firebase/database';
 import { roomRef, playerRef } from '../dbActions.js';
+import { db } from '../firebaseConfig.js';
 
 // db-touching functions separated from original lobby.js file to keep it as pure as possible
 
@@ -54,7 +55,7 @@ export function useRedirectIfNotPresent(roomCode, playerId, router)
 
  export function usePlayerDisconnectListener(roomCode, playerId, isHost){
   useEffect(() => {
-    onDisconnect(isHost ? roomRef(roomCode): playerRef(roomCode, playerId)).remove()
+    onDisconnect(isHost ? roomRef(roomCode): playerRef(roomCode, playerId)).remove();
   }, [roomCode, playerId, isHost]);
 }
 
@@ -109,7 +110,7 @@ export const kick = async(roomCode, targetId) => {
 
 // leave function. pass true to LeaveRoom ifHost to delete room, false if not, then reroute user
 // normally dont want to tangle the UI logic or flow with db calls but.. better to keep this atomic than struggle with timing
-export const leave = async(checkHost, roomCode, playerId, router) => {
+export const leave = async(checkHost, roomCode, playerId, router, username) => {
       try{
         if (checkHost){
           // for testing purposes on web, Alert.alert() in the else block is only for mobile devices so it wont display anything
@@ -144,6 +145,7 @@ export const leave = async(checkHost, roomCode, playerId, router) => {
         else{
           try{
               await LeaveRoom(roomCode, playerId, false);
+              pushMessage(roomCode, "System", `${username} has left the lobby.`)
               router.replace("/")
           }
           catch(e){
