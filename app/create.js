@@ -39,7 +39,7 @@ export default function CreateLobby() {
   };
 
   const isInvalid = lobbySize.trim() === "" 
-        || parseInt(lobbySize) <= 0 
+        || parseInt(lobbySize) <= 2 // has to be 3 minimum 
         || impostors.trim() === "" 
         || parseInt(impostors) <= 0
         || parseInt(impostors) > 3

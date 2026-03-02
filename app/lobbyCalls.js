@@ -1,4 +1,4 @@
-import { ReadyUp, LeaveRoom, changeGameStatus, pushMessage } from '../dbActions.js';
+import { ReadyUp, LeaveRoom, changeGameStatus, pushMessage, ToggleSpectator } from '../dbActions.js';
 import { Platform, Alert } from 'react-native';
 import { useEffect, useRef } from 'react';
 import { onValue, onDisconnect, child } from 'firebase/database';
@@ -30,6 +30,7 @@ export function useLobbyListener(roomCode, router, setPlayers) {
           id: id,
           name: data?.name ?? "",
           isHost: !!data?.isHost,
+          isSpectator: !!data.isSpectator,
           isReady:!!data?.isReady,
        }));
 
@@ -107,6 +108,14 @@ export const kick = async(roomCode, targetId) => {
         throw e;
   }
 }
+// ToggleSpectator wrapper, abstracting the catch blocks and error catching
+export const spectator = async (roomCode, playerId, currentStatus, isHost) => {
+  try {
+    await ToggleSpectator(roomCode, playerId, currentStatus, isHost);
+  } catch (e) {
+    console.log("Toggle spectator failed: ", e.message);
+  }
+};
 
 // leave function. pass true to LeaveRoom ifHost to delete room, false if not, then reroute user
 // normally dont want to tangle the UI logic or flow with db calls but.. better to keep this atomic than struggle with timing

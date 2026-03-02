@@ -2,7 +2,7 @@ import { View } from 'react-native';
 import { Text } from "react-native-paper";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useState, useEffect  } from "react";
-import { kick, leave, ready, useLobbyListener, startGame, usePlayerDisconnectListener, useStartGameListener, useRedirectIfNotPresent} from './lobbyCalls.js'
+import { kick, leave, ready, spectator, useLobbyListener, startGame, usePlayerDisconnectListener, useStartGameListener, useRedirectIfNotPresent} from './lobbyCalls.js'
 import { LobbyPlayers } from './components/lobbyPlayers.js';
 import { styles } from '../styles/Styles.js';
 import { chooseImpostor } from '../dbActions.js';
@@ -20,9 +20,11 @@ export default function Lobby() {
 
     const myPlayer = players.find(p => p.id === playerId);
     const isReady = myPlayer?.isReady ?? false;
+    const isSpectating = myPlayer?.isSpectator ?? false;
+    const activePlayers = players.filter(p => !p.isSpectator);
     const allReady = 
-      playerList.length > 1 && 
-      playerList.every((player) => player.isReady);
+      activePlayers.length >= 3 && 
+      activePlayers.every((player) => player.isReady);
     
     const checkHost = (isHost === 'true');
     const [showPopup, setShowPopup] = useState(false);
@@ -72,10 +74,11 @@ export default function Lobby() {
                 chooseImpostor(roomCode)
               }}
             >
-              Start Game
+              {isSpectating ? "Start Game (as Spectator)" : "Start Game"}
             </AppButton>
             ) : !isPreview ? (
             <AppButton 
+              disabled={isSpectating}
               mode="contained" 
               style={styles.button} 
               onPress={() => {ready(roomCode, playerId, isReady)}}
@@ -103,6 +106,13 @@ export default function Lobby() {
             >
               Change Username
             </AppButton>
+
+            <AppButton
+              mode="contained"
+              onPress={() => spectator(roomCode, playerId, isSpectating, checkHost)}
+              >
+                {isSpectating ? "Stop Spectating" : "Spectate"}
+              </AppButton>
 
         <DisplayNameModal
           visible={showPopup}

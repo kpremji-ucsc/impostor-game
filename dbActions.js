@@ -28,6 +28,7 @@ export const CreateRoom = async (playerName, numPlayers, numImposters) => {
                     isReady: true, 
                     isHost: true, 
                     isImpostor: false,
+                    isSpectator: false,
                 }
             }
         });
@@ -63,6 +64,7 @@ export const JoinRoom = async (roomCode, playerName) => {
                 isReady: false,
                 isHost: false,
                 isImpostor: false,
+                isSpectator: false,
             };
             return room;
         });
@@ -110,10 +112,13 @@ export const chooseImpostor = async (roomCode) => {
             // loop and reset status if this is playing again 
             currentPlayers.forEach((id) => {room.players[id].isImpostor = false; });
 
+            // filters out spectators from imposter shuffling
+            const activePlayers = currentPlayers.filter(id => !room.players[id].isSpectator);
+
             // math.random by default varies between 0 and 1, and sort() swaps a pair if it is given a positive number
             // by default it would all be positive and only swap items forwards
             // to get a true shuffle, we adjust the range to give us a negative number half the time
-            const shuffledPlayers = currentPlayers.sort(() => Math.random() - 0.5);
+            const shuffledPlayers = activePlayers.sort(() => Math.random() - 0.5);
 
             // take a slice of our new shuffled players and these are now the impostors
             const numImposters = Number (room.numImposters) || 1;
@@ -168,6 +173,19 @@ export const pushMessage = async (roomCode, name, text) => {
         await push(chatLog, message);
     } catch (e) {
         console.error("Could not push message to DB: ", e);
+        throw e;
+    }
+}
+
+export const ToggleSpectator = async (roomCode, playerId, currentSpectatorStatus, isHost) => {
+    try {
+        const nextSpectatorStatus = !currentSpectatorStatus;
+        await update(playerRef(roomCode, playerId), {
+            isSpectator: nextSpectatorStatus,
+            isReady: (!nextSpectatorStatus && isHost) ? true : false 
+        });
+    } catch (e) {
+        console.error("Failed to toggle spectator status: ", e);
         throw e;
     }
 }

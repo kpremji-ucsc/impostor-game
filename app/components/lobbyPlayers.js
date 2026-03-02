@@ -12,9 +12,10 @@ export const LobbyPlayers = ({ players, isHost, kickCall}) => {
       keyExtractor={(item) => item.id}
       renderItem={({ item }) => (
         <View style={styles.row}>
-          <Text style={styles.name}>
-            {item.name} {item.isHost && "(Host)"}{"   "}
-            {item.isReady && (
+          <Text style={[styles.name, item.isSpectator && {opacity: 0.5}]}>
+            {item.name} {item.isHost && "(Host)"}
+            {item.isSpectator ? " (Spectator)" : ""} {"   "}
+            {!item.isSpectator && item.isReady && (
               <Text style={styles.ready}>
                 READY
               </Text>
