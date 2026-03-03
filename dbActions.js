@@ -1,4 +1,5 @@
-import { ref, set, get, remove, update, runTransaction, push, serverTimestamp } from "firebase/database";
+import { ref, set, remove, update, runTransaction, push, serverTimestamp, get } from "firebase/database";
+
 import { db } from "./firebaseConfig";
 
 export const roomRef = (roomCode) =>
@@ -9,6 +10,9 @@ export const chatRef = (roomCode) =>
 
 export const playerRef = (roomCode, playerId) =>
     ref(db, `rooms/${roomCode}/lobby/players/${playerId}`)
+
+export const wordBankRef = (wordBankId = "") =>
+    ref(db, wordBankId ? `wordBanks/${wordBankId}` : "wordBanks");
 
 export const CreateRoom = async (playerName, numPlayers, numImposters) => {
     const roomCode = Math.random().toString(20).substring(2,7).toUpperCase();
@@ -189,3 +193,116 @@ export const ToggleSpectator = async (roomCode, playerId, currentSpectatorStatus
         throw e;
     }
 }
+export const pushUserName = async (userId, name) => {
+    if (!name || !name.trim()) return;
+    
+    const userRef = ref(db, `users/${userId}`);
+    console.log(userId, userRef);
+    try {
+        await update(userRef, { name: name.trim() },{ userId: userId.trim() });
+    } catch (e) {
+        console.error("Could not update user name in DB: ", e);
+        throw e;
+    }
+        };
+
+export const getUserName = async (userId) => {
+const userName = ref(db, `users/${userId}/name`);
+    try {
+        const snapshot = await get(userName);
+            return snapshot.val(); } catch (e) {
+        console.error("Could not get user name from DB: ", e);
+        throw e;
+    }
+   
+}
+
+export const createWordBank = async (theme, words, ownerId, ownerName = "") => {
+    const cleanTheme = theme?.trim();
+    const cleanWords = Array.isArray(words)
+        ? words.map((word) => word?.trim()).filter(Boolean)
+        : [];
+    const cleanOwnerId = ownerId?.trim();
+    const cleanOwnerName = ownerName?.trim() || "";
+
+    if (!cleanTheme) {
+        throw new Error("Theme is required.");
+    }
+
+    if (!cleanOwnerId) {
+        throw new Error("Owner id is required.");
+    }
+
+    const newWordBankRef = push(wordBankRef());
+
+    try {
+        await set(newWordBankRef, {
+            theme: cleanTheme,
+            words: cleanWords,
+            ownerId: cleanOwnerId,
+            ownerName: cleanOwnerName,
+        });
+        return newWordBankRef.key;
+    } catch (e) {
+        console.error("Could not create word bank: ", e);
+        throw e;
+    }
+}
+
+export const saveWordBank = async (wordBankId, theme, words, ownerId, ownerName = "") => {
+    const cleanTheme = theme?.trim();
+    const cleanWords = Array.isArray(words)
+        ? words.map((word) => word?.trim()).filter(Boolean)
+        : [];
+    const cleanOwnerId = ownerId?.trim();
+    const cleanOwnerName = ownerName?.trim() || "";
+
+    if (!wordBankId?.trim()) {
+        throw new Error("Word bank id is required.");
+    }
+
+    if (!cleanTheme) {
+        throw new Error("Theme is required.");
+    }
+
+    if (!cleanOwnerId) {
+        throw new Error("Owner id is required.");
+    }
+
+    try {
+        await set(wordBankRef(wordBankId.trim()), {
+            theme: cleanTheme,
+            words: cleanWords,
+            ownerId: cleanOwnerId,
+            ownerName: cleanOwnerName,
+        });
+    } catch (e) {
+        console.error("Could not save word bank: ", e);
+        throw e;
+    }
+}
+
+export const getWordBank = async (wordBankId) => {
+    if (!wordBankId?.trim()) {
+        throw new Error("Word bank id is required.");
+    }
+
+    try {
+        const snapshot = await get(wordBankRef(wordBankId.trim()));
+        return snapshot.val();
+    } catch (e) {
+        console.error("Could not get word bank: ", e);
+        throw e;
+    }
+}
+
+export const getWordBanks = async () => {
+    try {
+        const snapshot = await get(wordBankRef());
+        return snapshot.val();
+    } catch (e) {
+        console.error("Could not get word banks: ", e);
+        throw e;
+    }
+}
+
