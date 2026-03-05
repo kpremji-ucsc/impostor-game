@@ -6,6 +6,7 @@ import { styles } from '../styles/Styles.js';
 import { createWordBank } from '../dbActions.js';
 import { AppButton } from './components/appButton.js';
 import { MovingDiagonalBackground } from './components/movingBackground.js';
+import { UsernameDisplay } from './components/usernameDisplay.js';
 
 export default function CreateWordbank() {
   const router = useRouter();
@@ -14,6 +15,8 @@ export default function CreateWordbank() {
   const [isSaving, setIsSaving] = useState(false);
   const [snackMessage, setSnackMessage] = useState("");
   const [showSnackbar, setShowSnackbar] = useState(false);
+
+  const displayName = localStorage.getItem("displayName");
 
   const parsedWords = wordInput
     .split(",")
@@ -52,6 +55,7 @@ export default function CreateWordbank() {
   return (
     <View style={{ flex: 1 }}>
       <MovingDiagonalBackground />
+      <UsernameDisplay username={displayName} />
       <View style={styles.container}>
         <Text
           style={styles.title}

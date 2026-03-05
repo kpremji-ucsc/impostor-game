@@ -152,7 +152,7 @@ export default function GameScreen() {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.container}
       >
-        <MovingDiagonalBackground backgroundColor="#777" />
+        <MovingDiagonalBackground backgroundColor="#ffffff" />
 
         {/* WORD + PACK SECTION */}
         <View
