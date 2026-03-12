@@ -96,7 +96,7 @@ export default function CreateLobby() {
           keyboardType="number-pad"
         />
         <Text 
-          style={[!isInvalid && styles.invisible, isInvalid && styles.errorText]}
+          style={[styles.invisible, isInvalid && styles.errorText]}
         >
           Must be less than half of the total players.
         </Text>
