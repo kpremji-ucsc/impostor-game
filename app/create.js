@@ -38,12 +38,14 @@ export default function CreateLobby() {
         }
   };
 
+  const numImp = parseInt(impostors);
+  const numPlayers = parseInt(lobbySize);
   const isInvalid = lobbySize.trim() === "" 
-        || parseInt(lobbySize) <= 0 
+        || numPlayers < 3 
         || impostors.trim() === "" 
-        || parseInt(impostors) <= 0
-        || parseInt(impostors) > 3
-        || parseInt(impostors) > parseInt(lobbySize);
+        || numImp <= 0
+        || numImp > 3
+        || numImp >= numPlayers/2
 
   return (
     <View style={{ flex: 1 }}>
@@ -66,12 +68,17 @@ export default function CreateLobby() {
           maxLength={1}
           value={lobbySize}
           onChangeText={setLobbySize}
-          style={{ width: "85%", marginBottom: 20 }}
+          style={{ width: "85%" }}
           mode="outlined"
-          placeholder="Enter lobby size!"
+          placeholder="Minimum players is 3!"
           contentStyle={{ fontFamily: 'SpaceGrotesk' }}
           keyboardType="number-pad"
         />
+        <Text 
+          style={[styles.invisible, !(numPlayers > 2) && styles.errorText]}
+        >
+          Minimum players is three!
+        </Text>
 
         <TextInput
           label={          
@@ -83,12 +90,16 @@ export default function CreateLobby() {
           maxLength={1}
           value={impostors}
           onChangeText={setImpostors}
-          style={{ width: "85%", marginBottom: 20 }}
+          style={{ width: "85%" }}
           mode="outlined"
-          placeholder="Maximum imposters is three!"
           contentStyle={{ fontFamily: 'SpaceGrotesk' }}
           keyboardType="number-pad"
         />
+        <Text 
+          style={[styles.invisible, isInvalid && styles.errorText]}
+        >
+          Must be less than half of the total players.
+        </Text>
 
           <AppButton
             disabled={isInvalid}
