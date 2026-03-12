@@ -21,7 +21,7 @@ export default function Lobby() {
     const myPlayer = players.find(p => p.id === playerId);
     const isReady = myPlayer?.isReady ?? false;
     const allReady = 
-      playerList.length > 1 && 
+      playerList.length >= 3 && 
       playerList.every((player) => player.isReady);
     
     const checkHost = (isHost === 'true');
