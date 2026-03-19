@@ -2,6 +2,8 @@ import { View } from 'react-native';
 import { Text, TextInput, Snackbar } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import { styles } from '../styles/Styles.js';
 import { CreateRoom } from '../dbActions.js';
 import { AppButton } from './components/appButton.js';
@@ -14,55 +16,63 @@ export default function CreateLobby() {
   const [noLobbyCreatedAlert, setNoLobbyCreatedAlert] = useState(false);
 
   const create = async () => {
-      try {
-        // later change when we have SQLite to handle display name and persist locally
-        const username = localStorage.getItem("displayName");
+    try {
+      const username = await AsyncStorage.getItem("displayName");
 
-        const { roomCode, hostId, isHost } = await CreateRoom(
-                    username, 
-                    parseInt(lobbySize), 
-                    parseInt(impostors),
-                  );
+      if (!username?.trim()) {
+        throw new Error("No display name found.");
+      }
 
-          router.push({
-              pathname: "/lobbyUI", 
-              params: {
-              roomCode: roomCode, 
-              playerId: hostId,
-              isHost: isHost
-            }, 
-          });
-        } catch (e) {
-            setNoLobbyCreatedAlert(true);
-            console.error(e);
-        }
+      const { roomCode, hostId, isHost } = await CreateRoom(
+        username.trim(),
+        parseInt(lobbySize, 10),
+        parseInt(impostors, 10)
+      );
+
+      router.push({
+        pathname: "/lobbyUI",
+        params: {
+          roomCode,
+          playerId: hostId,
+          isHost,
+        },
+      });
+    } catch (e) {
+      setNoLobbyCreatedAlert(true);
+      console.error(e);
+    }
   };
 
-  const isInvalid = lobbySize.trim() === "" 
-        || parseInt(lobbySize) <= 0 
-        || impostors.trim() === "" 
-        || parseInt(impostors) <= 0
-        || parseInt(impostors) > 3
-        || parseInt(impostors) > parseInt(lobbySize);
+  const lobbySizeNum = parseInt(lobbySize, 10);
+  const impostorsNum = parseInt(impostors, 10);
+
+  const isInvalid =
+    lobbySize.trim() === "" ||
+    Number.isNaN(lobbySizeNum) ||
+    lobbySizeNum <= 0 ||
+    impostors.trim() === "" ||
+    Number.isNaN(impostorsNum) ||
+    impostorsNum <= 0 ||
+    impostorsNum > 3 ||
+    impostorsNum > lobbySizeNum;
 
   return (
     <View style={{ flex: 1 }}>
-      <MovingDiagonalBackground/>
+      <MovingDiagonalBackground />
       <View style={styles.container}>
-        <Text 
-          style={styles.title} 
+        <Text
+          style={styles.title}
           variant="headlineMedium"
-          > 
-          Create Lobby 
+        >
+          Create Lobby
         </Text>
 
         <TextInput
-          label={          
-            <Text
-              style={{ fontFamily: 'SpecialElite' }}
-            >
+          label={
+            <Text style={{ fontFamily: 'SpecialElite' }}>
               Lobby Size
-            </Text>}
+            </Text>
+          }
           maxLength={1}
           value={lobbySize}
           onChangeText={setLobbySize}
@@ -74,12 +84,11 @@ export default function CreateLobby() {
         />
 
         <TextInput
-          label={          
-            <Text
-              style={{ fontFamily: 'SpecialElite' }}
-            >
+          label={
+            <Text style={{ fontFamily: 'SpecialElite' }}>
               Impostors
-            </Text>}
+            </Text>
+          }
           maxLength={1}
           value={impostors}
           onChangeText={setImpostors}
@@ -90,34 +99,35 @@ export default function CreateLobby() {
           keyboardType="number-pad"
         />
 
-          <AppButton
-            disabled={isInvalid}
-            mode="contained" 
-            onPress={create}
-          >
-            Create Lobby
-          </AppButton>
+        <AppButton
+          disabled={isInvalid}
+          mode="contained"
+          onPress={create}
+        >
+          Create Lobby
+        </AppButton>
 
-          <AppButton
-            mode="contained" 
-            onPress={() => {router.replace("/")}}
-          >
-            Return
-          </AppButton>
+        <AppButton
+          mode="contained"
+          onPress={() => {
+            router.replace("/");
+          }}
+        >
+          Return
+        </AppButton>
 
-          <Snackbar
-            visible={noLobbyCreatedAlert}
-            onDismiss={() => setNoLobbyCreatedAlert(false)}
-            duration={3000}
-            action={{
-              icon: "close",
-              onPress: () => setNoLobbyCreatedAlert(false),
-            }}
-          >
+        <Snackbar
+          visible={noLobbyCreatedAlert}
+          onDismiss={() => setNoLobbyCreatedAlert(false)}
+          duration={3000}
+          action={{
+            icon: "close",
+            onPress: () => setNoLobbyCreatedAlert(false),
+          }}
+        >
           Lobby not able to be created! Please try again.
         </Snackbar>
       </View>
     </View>
   );
 }
-

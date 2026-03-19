@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import { Text, TextInput, Snackbar } from "react-native-paper";
 import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import { styles } from '../styles/Styles.js';
 import { createWordBank } from '../dbActions.js';
 import { AppButton } from './components/appButton.js';
@@ -26,22 +28,23 @@ export default function CreateWordbank() {
   const handleSave = async () => {
     if (isInvalid || isSaving) return;
 
-    const ownerId = typeof window !== "undefined" ? localStorage.getItem("userId") : null;
-    const ownerName = typeof window !== "undefined" ? localStorage.getItem("displayName") || "" : "";
-
     try {
+      const ownerId = await AsyncStorage.getItem("userId");
+      const ownerName = (await AsyncStorage.getItem("displayName")) || "";
+
       if (!ownerId) {
         throw new Error("You must be logged in to create a word bank.");
       }
 
       setIsSaving(true);
       await createWordBank(theme, parsedWords, ownerId, ownerName);
+
       setTheme("");
       setWordInput("");
       setSnackMessage("Word bank created.");
       setShowSnackbar(true);
     } catch (e) {
-      console.error("Could not create word bank: ", e);
+      console.error("Could not create word bank:", e);
       setSnackMessage("Could not create word bank.");
       setShowSnackbar(true);
     } finally {
@@ -53,19 +56,12 @@ export default function CreateWordbank() {
     <View style={{ flex: 1 }}>
       <MovingDiagonalBackground />
       <View style={styles.container}>
-        <Text
-          style={styles.title}
-          variant="headlineMedium"
-        >
+        <Text style={styles.title} variant="headlineMedium">
           Create Wordbank
         </Text>
 
         <TextInput
-          label={
-            <Text style={{ fontFamily: 'SpecialElite' }}>
-              Theme
-            </Text>
-          }
+          label={<Text style={{ fontFamily: 'SpecialElite' }}>Theme</Text>}
           value={theme}
           onChangeText={setTheme}
           style={{ width: "85%", marginBottom: 20 }}
@@ -75,11 +71,7 @@ export default function CreateWordbank() {
         />
 
         <TextInput
-          label={
-            <Text style={{ fontFamily: 'SpecialElite' }}>
-              Words
-            </Text>
-          }
+          label={<Text style={{ fontFamily: 'SpecialElite' }}>Words</Text>}
           value={wordInput}
           onChangeText={setWordInput}
           style={{ width: "85%", marginBottom: 10 }}

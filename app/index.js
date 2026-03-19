@@ -2,31 +2,31 @@ import { useEffect, useState } from 'react';
 import { View, Image } from 'react-native';
 import { Text } from "react-native-paper";
 import { useRouter } from "expo-router";
-import { useFonts} from 'expo-font';
+import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import { styles } from '../styles/Styles.js';
 import { AppButton } from './components/appButton.js';
 import { DisplayNameModal } from './components/displayNamePopUp.js';
 import { pushUserName } from '../dbActions.js';
 
-import { SpaceGrotesk_700Bold } from '@expo-google-fonts/space-grotesk'
-import { SpecialElite_400Regular } from '@expo-google-fonts/special-elite'
+import { SpaceGrotesk_700Bold } from '@expo-google-fonts/space-grotesk';
+import { SpecialElite_400Regular } from '@expo-google-fonts/special-elite';
 import { MovingDiagonalBackground } from './components/movingBackground.js';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function Index() {
   const router = useRouter();
-  const [userId, setUserId] = useState(() =>
-    typeof window !== "undefined" ? localStorage.getItem("userId") : null
-  );
-  const [displayName, setDisplayName] = useState(() =>
-    typeof window !== "undefined" ? localStorage.getItem("displayName") || "" : ""
-  );
+
+  const [userId, setUserId] = useState(null);
+  const [displayName, setDisplayName] = useState("");
   const [showNameModal, setShowNameModal] = useState(false);
+
   const [fontsLoaded, err] = useFonts({
-    'SpaceGrotesk': SpaceGrotesk_700Bold,
-    'SpecialElite': SpecialElite_400Regular,
+    SpaceGrotesk: SpaceGrotesk_700Bold,
+    SpecialElite: SpecialElite_400Regular,
   });
 
   useEffect(() => {
@@ -36,51 +36,67 @@ export default function Index() {
   }, [fontsLoaded, err]);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    setUserId(localStorage.getItem("userId"));
-    setDisplayName(localStorage.getItem("displayName") || "");
+    const loadStoredUserData = async () => {
+      try {
+        const savedUserId = await AsyncStorage.getItem("userId");
+        const savedDisplayName = await AsyncStorage.getItem("displayName");
+
+        setUserId(savedUserId);
+        setDisplayName(savedDisplayName || "");
+      } catch (e) {
+        console.error("Failed to load stored user data:", e);
+      }
+    };
+
+    loadStoredUserData();
   }, []);
 
   if (!fontsLoaded && !err) return null;
 
-  const handleLogout = () => {
-    if (typeof window === "undefined") return;
-    localStorage.removeItem("userId");
-    localStorage.removeItem("displayName");
-    setUserId(null);
-    setDisplayName("");
-    setShowNameModal(false);
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem("userId");
+      await AsyncStorage.removeItem("displayName");
+
+      setUserId(null);
+      setDisplayName("");
+      setShowNameModal(false);
+    } catch (e) {
+      console.error("Failed to log out:", e);
+    }
   };
 
   const handleSaveName = async () => {
     const nextName = displayName.trim();
-    if (!nextName || !userId || typeof window === "undefined") return;
+    if (!nextName || !userId) return;
 
-    localStorage.setItem("displayName", nextName);
-    await pushUserName(userId, nextName);
-    setDisplayName(nextName);
-    setShowNameModal(false);
+    try {
+      await AsyncStorage.setItem("displayName", nextName);
+      await pushUserName(userId, nextName);
+      setDisplayName(nextName);
+      setShowNameModal(false);
+    } catch (e) {
+      console.error("Failed to save display name:", e);
+    }
   };
-
 
   return (
     <View style={{ flex: 1 }}>
-      <MovingDiagonalBackground/>
+      <MovingDiagonalBackground />
       <View style={styles.container}>
         <Image
           source={require('../assets/impostorGameLogo.png')}
           style={styles.logo}
         />
-        <Text 
-          style={styles.title} 
-          variant="headlineMedium"
-          > 
-          Impostor Game 
-        </Text>
 
         <Text
-          style={styles.caption}
+          style={styles.title}
+          variant="headlineMedium"
         >
+          Impostor Game
+        </Text>
+
+        <Text style={styles.caption}>
           A social deduction game.
         </Text>
 
@@ -90,20 +106,20 @@ export default function Index() {
               mode="contained"
               onPress={() => router.push("/login")}
             >
-                Login
+              Login
             </AppButton>
 
-            <AppButton 
-              mode="contained" 
+            <AppButton
+              mode="contained"
               onPress={() => router.push("/join")}
             >
-                Guest
+              Guest
             </AppButton>
           </>
         ) : (
           <>
-            <AppButton 
-              mode="contained" 
+            <AppButton
+              mode="contained"
               onPress={() => router.push("/create")}
             >
               Create Lobby
@@ -132,6 +148,7 @@ export default function Index() {
           </>
         )}
       </View>
+
       <DisplayNameModal
         visible={showNameModal}
         displayName={displayName}
