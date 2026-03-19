@@ -1,6 +1,6 @@
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useState, useEffect } from "react";
-import { Platform, View, Text, KeyboardAvoidingView } from "react-native";
+import { Platform, View, Text, KeyboardAvoidingView, ScrollView } from "react-native";
 
 import { db } from "../firebaseConfig.js";
 import { onValue, ref, set, get, runTransaction } from "firebase/database";
@@ -33,6 +33,7 @@ export default function GameScreen() {
   const [selectedPack, setSelectedPack] = useState(null);
   const [currentWord, setCurrentWord] = useState(null);
   const [availablePacks, setAvailablePacks] = useState([]);
+  const [localSelectedPack, setLocalSelectedPack] = useState(null); // Host's UI selection
 
   const [isChatMinimized, setIsChatMinimized] = useState(false);
 
@@ -98,14 +99,14 @@ useEffect(() => {
      HOST: CHOOSE PACK -> ATOMICALLY SET pack + word + impostors
      This prevents impostors from briefly seeing the real word.
   -------------------------- */
-  const choosePack = async (packId) => {
-    if (!checkHost) return;
+  const generateWord = async () => {
+    if (!checkHost || !localSelectedPack) return;
 
     try {
       // load words once
-      const snapshot = await get(ref(db, `wordBanks/${packId}/words`));
+      const snapshot = await get(ref(db, `wordBanks/${localSelectedPack}/words`));
       if (!snapshot.exists()) {
-        console.log("No word bank found at:", `wordBanks/${packId}/words`);
+        console.log("No word bank found at:", `wordBanks/${localSelectedPack}/words`);
         return;
       }
 
@@ -123,7 +124,7 @@ useEffect(() => {
         if (room === null) return room;
 
         // set pack + word
-        room.selectedPack = packId;
+        room.selectedPack = localSelectedPack;
         room.currentWord = randomWord;
 
         // assign impostors
@@ -146,7 +147,7 @@ useEffect(() => {
         return room;
       });
     } catch (err) {
-      console.log("Error choosing pack:", err);
+      console.log("Error generating word:", err);
     }
   };
 
@@ -187,20 +188,47 @@ useEffect(() => {
             {displayedWord}
           </Text>
 
-          {/* PACK BUTTONS (HOST ONLY) */}
+          {/* PACK SELECTOR (HOST ONLY) */}
           {checkHost && (
             <View style={{ width: 260, alignItems: "stretch" }}>
-              {availablePacks.map((pack) => (
-                <View key={pack.id} style={{ marginBottom: 10, width: "100%" }}>
-                  <AppButton onPress={() => choosePack(pack.id)}>
+              <Text style={{ fontFamily: 'SpecialElite', fontSize: 14, marginBottom: 8, textAlign: 'center' }}>
+                Select Wordbank:
+              </Text>
+              <ScrollView
+                style={{ maxHeight: 120, marginBottom: 10 }}
+                contentContainerStyle={{ gap: 8 }}
+              >
+                {availablePacks.map((pack) => (
+                  <AppButton
+                    key={pack.id}
+                    mode={localSelectedPack === pack.id ? "contained" : "outlined"}
+                    onPress={() => setLocalSelectedPack(pack.id)}
+                    style={{ marginBottom: 8 }}
+                  >
                     {pack.theme}
                   </AppButton>
-                </View>     
-              ))}
+                ))}
+                {availablePacks.length === 0 && (
+                  <Text style={{ fontFamily: 'SpecialElite', textAlign: 'center', color: '#777', fontSize: 12 }}>
+                    No wordbanks available
+                  </Text>
+                )}
+              </ScrollView>
 
-              <Text style={{ marginTop: 8, textAlign: "center" }}>
-                {selectedPack ? `Selected: ${selectedPack}` : "No pack selected"}
-              </Text>
+              <AppButton
+                mode="contained"
+                disabled={!localSelectedPack}
+                onPress={generateWord}
+                style={{ marginBottom: 8 }}
+              >
+                Generate Word
+              </AppButton>
+
+              {selectedPack && (
+                <Text style={{ fontFamily: 'SpaceGrotesk', fontSize: 12, textAlign: 'center', color: '#4F7942' }}>
+                  Active: {availablePacks.find(p => p.id === selectedPack)?.theme || selectedPack}
+                </Text>
+              )}
             </View>
           )}
         </View>
