@@ -86,7 +86,17 @@ export const styles = StyleSheet.create({
     width: '80%',
     color: '#4F7942'
   },
-  
+  invisible: {
+    fontSize: 12,
+    fontFamily: 'SpecialElite',
+    opacity: 0,
+  },
+  errorText: {
+    opacity: 1,
+    fontSize: 12,
+    color: '#ff4444',
+    fontFamily: 'SpecialElite',
+  },
   
   logo:{
     width: 100,
