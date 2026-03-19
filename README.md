@@ -5,13 +5,13 @@ We wanted to address this problem with an app that was free, lightweight, and qu
 
 ## Built With
 Frontend:
-- React Native + React Native Paper
-- Noun Project
-- Expo Router
+- [React Native](https://reactnative.dev/) + [React Native Paper](https://reactnativepaper.com/)
+- [Noun Project](https://thenounproject.com/) (Icons)
+- [Expo Router](https://expo.dev/)
 - CSS
 
 Backend/ Database & Auth:
-- Firebase RTDB (BaaS)
+- [Firebase RTDB](https://firebase.google.com/) (BaaS)
 - Google OAuth (JWT)
   
 ## Dependencies
