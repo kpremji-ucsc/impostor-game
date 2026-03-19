@@ -1,8 +1,8 @@
-#Imposter Game
-##Dependencies
+# Imposter Game
+## Dependencies
 - [Node.js](https://nodejs.org/en/download)
 
-##Installation
+## Installation
 1. Copy the HTTPS Clone URL 
 2. Enter terminal, enter target destination folder
 3. Run git clone `git clone https://github.com/kpremji-ucsc/impostor-game.git`
