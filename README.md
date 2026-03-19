@@ -1,4 +1,19 @@
 # Imposter Game
+App version of the trending impostor game taking over social media. 
+The problem is that one person has to sit out because they’d be responsible for word distribution & potentially choosing the impostor.
+We wanted to address this problem with an app that was free, lightweight, and quick.
+
+## Built With
+Frontend:
+- React Native + React Native Paper
+- Noun Project
+- Expo Router
+- CSS
+
+Backend/ Database & Auth:
+- Firebase RTDB (BaaS)
+- Google OAuth (JWT)
+  
 ## Dependencies
 - [Node.js](https://nodejs.org/en/download)
 
