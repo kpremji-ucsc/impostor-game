@@ -73,14 +73,26 @@ export default function GameScreen() {
      LISTEN: WORD BANKS (for dynamic buttons)
      wordBanks/<id> contains { theme, words: [...] }
   -------------------------- */
-  useEffect(() => {
-    const banksRef = ref(db, "wordBanks");
-    const unsub = onValue(banksRef, (snap) => {
-      const v = snap.val();
-      setAvailablePacks(v ? Object.keys(v) : []);
-    });
-    return () => unsub();
-  }, []);
+useEffect(() => {
+  const banksRef = ref(db, "wordBanks");
+  const unsub = onValue(banksRef, (snap) => {
+    const value = snap.val();
+
+    if (!value) {
+      setAvailablePacks([]);
+      return;
+    }
+
+    const packs = Object.entries(value).map(([id, pack]) => ({
+      id,
+      theme: pack.theme || id,
+    }));
+
+    setAvailablePacks(packs);
+  });
+
+  return () => unsub();
+}, []);
 
   /* -------------------------
      HOST: CHOOSE PACK -> ATOMICALLY SET pack + word + impostors
@@ -178,12 +190,12 @@ export default function GameScreen() {
           {/* PACK BUTTONS (HOST ONLY) */}
           {checkHost && (
             <View style={{ width: 260, alignItems: "stretch" }}>
-              {availablePacks.map((packId) => (
-                <View key={packId} style={{ marginBottom: 10, width: "100%" }}>
-                  <AppButton onPress={() => choosePack(packId)}>
-                    {packId}
+              {availablePacks.map((pack) => (
+                <View key={pack.id} style={{ marginBottom: 10, width: "100%" }}>
+                  <AppButton onPress={() => choosePack(pack.id)}>
+                    {pack.theme}
                   </AppButton>
-                </View>
+                </View>     
               ))}
 
               <Text style={{ marginTop: 8, textAlign: "center" }}>
