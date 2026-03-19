@@ -288,3 +288,79 @@ export const getWordBanks = async () => {
         throw e;
     }
 }
+
+export const setSelectedWordBank = async (roomCode, wordBankId) => {
+    if (!wordBankId?.trim()) {
+        throw new Error("Word bank id is required.");
+    }
+
+    try {
+        await update(roomRef(roomCode), { selectedPack: wordBankId.trim() });
+    } catch (e) {
+        console.error("Could not set selected word bank: ", e);
+        throw e;
+    }
+}
+
+export const startGameWithWordBank = async (roomCode) => {
+    try {
+        // First, get the room data to check selected pack
+        const roomSnapshot = await get(roomRef(roomCode));
+        if (!roomSnapshot.exists()) {
+            throw new Error("Room not found!");
+        }
+
+        const roomData = roomSnapshot.val();
+        if (!roomData.selectedPack) {
+            throw new Error("No wordbank selected!");
+        }
+
+        // Get the words from the selected wordbank
+        const wordsSnapshot = await get(ref(db, `wordBanks/${roomData.selectedPack}/words`));
+        if (!wordsSnapshot.exists()) {
+            throw new Error("Selected wordbank not found!");
+        }
+
+        const wordsRaw = wordsSnapshot.val();
+        const words = Array.isArray(wordsRaw)
+            ? wordsRaw.filter(Boolean)
+            : Object.values(wordsRaw).filter(Boolean);
+
+        if (words.length === 0) {
+            throw new Error("Selected wordbank has no words!");
+        }
+
+        // Pick a random word
+        const randomWord = words[Math.floor(Math.random() * words.length)];
+
+        // Now do the transaction to update everything atomically
+        await runTransaction(roomRef(roomCode), (room) => {
+            if (room === null) return room;
+
+            // Set the current word
+            room.currentWord = randomWord;
+
+            // Assign impostors
+            const currentPlayers = room.players ? Object.keys(room.players) : [];
+            currentPlayers.forEach((id) => {
+                room.players[id].isImpostor = false;
+            });
+
+            const numImposters = Number(room.numImposters) || 1;
+            const shuffled = [...currentPlayers].sort(() => Math.random() - 0.5);
+            const impostors = shuffled.slice(0, Math.min(numImposters, currentPlayers.length));
+
+            impostors.forEach((id) => {
+                room.players[id].isImpostor = true;
+            });
+
+            // Change status to playing
+            room.status = 'playing';
+
+            return room;
+        });
+    } catch (e) {
+        console.error("Could not start game with word bank: ", e);
+        throw e;
+    }
+}

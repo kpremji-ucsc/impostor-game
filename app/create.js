@@ -6,12 +6,15 @@ import { styles } from '../styles/Styles.js';
 import { CreateRoom } from '../dbActions.js';
 import { AppButton } from './components/appButton.js';
 import { MovingDiagonalBackground } from './components/movingBackground.js';
+import { UsernameDisplay } from './components/usernameDisplay.js';
 
 export default function CreateLobby() {
   const router = useRouter();
   const [lobbySize, setLobbySize] = useState("");
   const [impostors, setImpostors] = useState("1");
   const [noLobbyCreatedAlert, setNoLobbyCreatedAlert] = useState(false);
+
+  const displayName = localStorage.getItem("displayName");
 
   const create = async () => {
       try {
@@ -50,6 +53,7 @@ export default function CreateLobby() {
   return (
     <View style={{ flex: 1 }}>
       <MovingDiagonalBackground/>
+      <UsernameDisplay username={displayName} />
       <View style={styles.container}>
         <Text 
           style={styles.title} 

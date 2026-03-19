@@ -43,58 +43,78 @@ export const MovingDiagonalBackground = ({
     <View style={[styles.bg, { backgroundColor }]}>
       <Animated.View
         style={[
-          styles.bgWrapper, 
+          styles.bgWrapper,
           {
             transform: [{translateX: translateX}, {translateY: translateY}],
           },
         ]}
       >
         <View style={styles.bgRow}>
-          <ImageBackground 
-            source={require('../../assets/impostorGameBackground.png')} 
-            style={styles.bgImage} 
+          <ImageBackground
+            source={require('../../assets/impostorGameBackground.png')}
+            style={styles.bgImage}
             imageStyle={{ tintColor: imageTint}}
           />
-          <ImageBackground 
-            source={require('../../assets/impostorGameBackground.png')} 
+          <ImageBackground
+            source={require('../../assets/impostorGameBackground.png')}
             imageStyle={{ tintColor: imageTint}}
-            style={styles.bgImage} 
+            style={styles.bgImage}
+          />
+          <ImageBackground
+            source={require('../../assets/impostorGameBackground.png')}
+            imageStyle={{ tintColor: imageTint}}
+            style={styles.bgImage}
           />
         </View>
         <View style={styles.bgRow}>
-          <ImageBackground 
-            source={require('../../assets/impostorGameBackground.png')} 
+          <ImageBackground
+            source={require('../../assets/impostorGameBackground.png')}
             style={styles.bgImage}
             imageStyle={{ tintColor: imageTint}}
           />
-          <ImageBackground 
-            source={require('../../assets/impostorGameBackground.png')} 
+          <ImageBackground
+            source={require('../../assets/impostorGameBackground.png')}
             style={styles.bgImage}
-            imageStyle={{ tintColor: imageTint}} 
+            imageStyle={{ tintColor: imageTint}}
+          />
+          <ImageBackground
+            source={require('../../assets/impostorGameBackground.png')}
+            style={styles.bgImage}
+            imageStyle={{ tintColor: imageTint}}
           />
         </View>
         <View style={styles.bgRow}>
-          <ImageBackground 
-            source={require('../../assets/impostorGameBackground.png')} 
+          <ImageBackground
+            source={require('../../assets/impostorGameBackground.png')}
             style={styles.bgImage}
             imageStyle={{ tintColor: imageTint}}
           />
-          <ImageBackground 
-            source={require('../../assets/impostorGameBackground.png')} 
+          <ImageBackground
+            source={require('../../assets/impostorGameBackground.png')}
             style={styles.bgImage}
-            imageStyle={{ tintColor: imageTint}} 
+            imageStyle={{ tintColor: imageTint}}
           />
-        <ImageBackground 
-            source={require('../../assets/impostorGameBackground.png')} 
+          <ImageBackground
+            source={require('../../assets/impostorGameBackground.png')}
             style={styles.bgImage}
-            imageStyle={{ tintColor: imageTint}} 
+            imageStyle={{ tintColor: imageTint}}
           />
         </View>
-        <View>
-        <ImageBackground 
-            source={require('../../assets/impostorGameBackground.png')} 
+        <View style={styles.bgRow}>
+          <ImageBackground
+            source={require('../../assets/impostorGameBackground.png')}
             style={styles.bgImage}
-            imageStyle={{ tintColor: imageTint}} 
+            imageStyle={{ tintColor: imageTint}}
+          />
+          <ImageBackground
+            source={require('../../assets/impostorGameBackground.png')}
+            style={styles.bgImage}
+            imageStyle={{ tintColor: imageTint}}
+          />
+          <ImageBackground
+            source={require('../../assets/impostorGameBackground.png')}
+            style={styles.bgImage}
+            imageStyle={{ tintColor: imageTint}}
           />
         </View>
       </Animated.View>

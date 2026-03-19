@@ -12,13 +12,13 @@ export const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   bgWrapper: {
-    width: screenWidth * 2,
-    height: screenHeight * 2,
+    width: screenWidth * 3,
+    height: screenHeight * 3,
     flexDirection: 'column',
   },
   bgImage:{
-    width: 500,
-    height: 500,
+    width: Math.max(500, screenWidth / 2),
+    height: Math.max(500, screenHeight / 2),
     opacity: 0.20,
   },
   bgRow:{

@@ -7,6 +7,7 @@ import { styles } from '../styles/Styles.js';
 import { DisplayNameModal } from './components/displayNamePopUp.js';
 import { AppButton } from './components/appButton.js';
 import { MovingDiagonalBackground } from './components/movingBackground';
+import { UsernameDisplay } from './components/usernameDisplay.js';
 
 export default function FindLobby() {
     const router = useRouter();
@@ -63,6 +64,7 @@ export default function FindLobby() {
     return (
     <View style={{ flex: 1 }}>
       <MovingDiagonalBackground/>
+      <UsernameDisplay username={displayName} />
       <View style={styles.container}>
         <Text style={styles.title}>
           Impostor Game

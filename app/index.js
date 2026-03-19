@@ -12,6 +12,7 @@ import { pushUserName } from '../dbActions.js';
 import { SpaceGrotesk_700Bold } from '@expo-google-fonts/space-grotesk'
 import { SpecialElite_400Regular } from '@expo-google-fonts/special-elite'
 import { MovingDiagonalBackground } from './components/movingBackground.js';
+import { UsernameDisplay } from './components/usernameDisplay.js';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -66,6 +67,7 @@ export default function Index() {
   return (
     <View style={{ flex: 1 }}>
       <MovingDiagonalBackground/>
+      <UsernameDisplay username={displayName} />
       <View style={styles.container}>
         <Image
           source={require('../assets/impostorGameLogo.png')}

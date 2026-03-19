@@ -1,14 +1,17 @@
-import { View, Modal } from 'react-native';
+import { View, Modal, ScrollView } from 'react-native';
 import { Text, TextInput, Button } from "react-native-paper";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useState, useEffect  } from "react";
 import { kick, leave, ready, useLobbyListener, startGame, usePlayerDisconnectListener, useStartGameListener, useRedirectIfNotPresent} from './lobbyCalls.js'
 import { LobbyPlayers } from './components/lobbyPlayers.js';
 import { styles } from '../styles/Styles.js';
-import { chooseImpostor,pushUserName } from '../dbActions.js';
+import { chooseImpostor, pushUserName, setSelectedWordBank, startGameWithWordBank, getWordBanks } from '../dbActions.js';
 import { DisplayNameModal } from './components/displayNamePopUp.js';
 import { AppButton } from './components/appButton.js';
 import { MovingDiagonalBackground } from './components/movingBackground.js';
+import { db } from '../firebaseConfig.js';
+import { onValue, ref } from 'firebase/database';
+import { roomRef } from '../dbActions.js';
 
 export default function Lobby() {
     const router = useRouter();
@@ -23,12 +26,17 @@ export default function Lobby() {
     const allReady = 
       playerList.length >= 3 && 
       playerList.every((player) => player.isReady);
-    
+
     const checkHost = (isHost === 'true');
     const [showPopup, setShowPopup] = useState(false);
     const [displayName, setDisplayName] = useState(() => {
       return typeof window !== 'undefined' ? localStorage.getItem("displayName") || "" : ""}
     );
+
+    // Wordbank state
+    const [availableWordBanks, setAvailableWordBanks] = useState({});
+    const [selectedWordBank, setSelectedWordBankState] = useState(null);
+    const [isStartingGame, setIsStartingGame] = useState(false);
 
     useEffect(() => {
   const savedName = localStorage.getItem("displayName")?.trim() ?? "";
@@ -40,6 +48,27 @@ export default function Lobby() {
 
   setShowPopup(true);
 }, []);
+
+    // Listen to available wordbanks
+    useEffect(() => {
+      const banksRef = ref(db, "wordBanks");
+      const unsub = onValue(banksRef, (snap) => {
+        const v = snap.val();
+        setAvailableWordBanks(v || {});
+      });
+      return () => unsub();
+    }, []);
+
+    // Listen to selected wordbank in the room
+    useEffect(() => {
+      if (isPreview) return;
+      const unsub = onValue(roomRef(roomCode), (snap) => {
+        const data = snap.val();
+        setSelectedWordBankState(data?.selectedPack ?? null);
+      });
+      return () => unsub();
+    }, [roomCode, isPreview]);
+
     // Preview mode is for UI-only navigation from login without an active room.
 
     if (!isPreview) {
@@ -50,6 +79,35 @@ export default function Lobby() {
       useStartGameListener(roomCode, playerId, checkHost, router);
     }
 
+    // Handle wordbank selection
+    const handleSelectWordBank = async (wordBankId) => {
+      if (!checkHost || isPreview) return;
+      try {
+        await setSelectedWordBank(roomCode, wordBankId);
+      } catch (e) {
+        console.error("Failed to select wordbank:", e);
+      }
+    };
+
+    // Handle start game with wordbank
+    const handleStartGame = async () => {
+      if (!checkHost || isPreview || isStartingGame) return;
+
+      if (!selectedWordBank) {
+        alert("Please select a wordbank before starting the game!");
+        return;
+      }
+
+      setIsStartingGame(true);
+      try {
+        await startGameWithWordBank(roomCode);
+      } catch (e) {
+        console.error("Failed to start game:", e);
+        alert("Failed to start game: " + e.message);
+        setIsStartingGame(false);
+      }
+    };
+
     return (
     <View style={{ flex: 1 }}>
       <MovingDiagonalBackground/>
@@ -57,34 +115,65 @@ export default function Lobby() {
           <Text style={styles.title} variant="headlineMedium">
             {isPreview ? "Lobby Preview" : `Join with Game PIN: ${roomCode}`}
           </Text>
-          <LobbyPlayers 
-            players={players} 
-            isHost={checkHost} 
-            kickCall={ (targetId) => { kick(roomCode, targetId)}} 
+          <LobbyPlayers
+            players={players}
+            isHost={checkHost}
+            kickCall={ (targetId) => { kick(roomCode, targetId)}}
           />
+
+          {/* Wordbank Selection (Host Only) */}
+          {checkHost && !isPreview && (
+            <View style={{ width: '85%', marginVertical: 10 }}>
+              <Text style={{ fontFamily: 'SpecialElite', fontSize: 16, marginBottom: 8, textAlign: 'center' }}>
+                Select Wordbank:
+              </Text>
+              <ScrollView
+                style={{ maxHeight: 150 }}
+                contentContainerStyle={{ gap: 8 }}
+              >
+                {Object.entries(availableWordBanks).map(([id, bank]) => (
+                  <AppButton
+                    key={id}
+                    mode={selectedWordBank === id ? "contained" : "outlined"}
+                    onPress={() => handleSelectWordBank(id)}
+                    style={{ marginBottom: 8 }}
+                  >
+                    {bank.theme || id}
+                  </AppButton>
+                ))}
+                {Object.keys(availableWordBanks).length === 0 && (
+                  <Text style={{ fontFamily: 'SpecialElite', textAlign: 'center', color: '#777' }}>
+                    No wordbanks available. Create one first!
+                  </Text>
+                )}
+              </ScrollView>
+              {selectedWordBank && (
+                <Text style={{ fontFamily: 'SpaceGrotesk', marginTop: 8, textAlign: 'center', color: '#4F7942' }}>
+                  Selected: {availableWordBanks[selectedWordBank]?.theme || selectedWordBank}
+                </Text>
+              )}
+            </View>
+          )}
 
           {checkHost && !isPreview ? (
             <AppButton
-              disabled={!allReady}
-              mode="contained" 
-              onPress={() => {
-                startGame(roomCode)
-                chooseImpostor(roomCode)
-              }}
+              disabled={!allReady || !selectedWordBank || isStartingGame}
+              mode="contained"
+              onPress={handleStartGame}
             >
-              Start Game
+              {isStartingGame ? "Starting..." : "Start Game"}
             </AppButton>
             ) : !isPreview ? (
-            <AppButton 
-              mode="contained" 
-              style={styles.button} 
+            <AppButton
+              mode="contained"
+              style={styles.button}
               onPress={() => {ready(roomCode, playerId, isReady)}}
             >
               {isReady ? "Unready" : "Ready Up"}
             </AppButton> ) : null
           }
 
-            <AppButton 
+            <AppButton
               mode="outlined"
               onPress={() => {
                 if (isPreview) {
@@ -93,7 +182,7 @@ export default function Lobby() {
                 }
                 leave(checkHost, roomCode, playerId, router);
               }}
-            > 
+            >
               {isPreview ? "Return" : checkHost ? 'Close Lobby' : 'Leave Lobby'}
             </AppButton>
           </View>
